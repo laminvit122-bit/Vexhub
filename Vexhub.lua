@@ -1,4 +1,4 @@
---[[ ⬢ VEXHUB | Prison Life Edition | v1.1 ]]
+--[[ VexHub | Prison Life Edition ]]
 if getgenv and getgenv().VexHub_Loaded then return end
 if getgenv then getgenv().VexHub_Loaded = true end
 
@@ -13,47 +13,32 @@ local player    = Players.LocalPlayer
 local parentGui = (gethui and gethui()) or CoreGui
 if parentGui:FindFirstChild("VexHubUI") then parentGui.VexHubUI:Destroy() end
 
--- ═══════════ ПАЛИТРА (плоская, как на скрине) ═══════════
 local C = {
-    bg        = Color3.fromRGB(15, 15, 15),
-    rowBg     = Color3.fromRGB(22, 22, 22),
-    rowHover  = Color3.fromRGB(30, 30, 30),
-    iconBg    = Color3.fromRGB(25, 25, 25),
-    topBg     = Color3.fromRGB(18, 18, 18),
-    accent    = Color3.fromRGB(0, 170, 255),
-    toggleOff = Color3.fromRGB(60, 60, 60),
+    bg        = Color3.fromRGB(14, 14, 14),
+    sidebar   = Color3.fromRGB(11, 11, 11),
+    row       = Color3.fromRGB(22, 22, 22),
+    line      = Color3.fromRGB(35, 35, 35),
+    accent    = Color3.fromRGB(139, 92, 246),
+    toggleOff = Color3.fromRGB(55, 55, 55),
     toggleOn  = Color3.fromRGB(255, 255, 255),
-    text      = Color3.fromRGB(240, 240, 240),
-    textDim   = Color3.fromRGB(140, 140, 140),
-    textFaint = Color3.fromRGB(90, 90, 90),
+    text      = Color3.fromRGB(235, 235, 235),
+    textDim   = Color3.fromRGB(120, 120, 120),
 }
 
-local TWEEN_FAST = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local TWEEN_SOFT = TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local T_FAST = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local T_SOFT = TweenInfo.new(0.26, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local function corner(i, r)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, r or 8)
-    c.Parent = i
-    return c
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 8); c.Parent = i; return c
 end
-
-local function tween(i, info, props)
-    local t = TweenService:Create(i, info, props)
-    t:Play()
-    return t
-end
+local function tween(i, info, props) local t = TweenService:Create(i, info, props); t:Play(); return t end
 
 local function getHum()
-    local c = player.Character
-    return c and c:FindFirstChildOfClass("Humanoid")
-end
-local function getHRP()
-    local c = player.Character
-    return c and c:FindFirstChild("HumanoidRootPart")
+    local ch = player.Character
+    return ch and ch:FindFirstChildOfClass("Humanoid")
 end
 
--- ═══════════ СКРИН ═══════════
+-- ═══════════ SCREEN ═══════════
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VexHubUI"
 ScreenGui.ResetOnSpawn = false
@@ -67,9 +52,8 @@ local notifEnabled  = true
 local notifDuration = 3
 
 local notifHolder = Instance.new("Frame")
-notifHolder.Name = "Notifs"
-notifHolder.Size = UDim2.new(0, 360, 1, -20)
-notifHolder.Position = UDim2.new(1, -380, 0, 20)
+notifHolder.Size = UDim2.new(0, 340, 1, -20)
+notifHolder.Position = UDim2.new(1, -360, 0, 20)
 notifHolder.BackgroundTransparency = 1
 notifHolder.Parent = ScreenGui
 
@@ -81,78 +65,69 @@ notifList.Parent = notifHolder
 
 local function notify(title, desc)
     if not notifEnabled then return end
-
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 0, 70)
-    frame.BackgroundColor3 = C.rowBg
-    frame.BorderSizePixel = 0
-    frame.Position = UDim2.new(1, 400, 0, 0)
-    frame.BackgroundTransparency = 1
-    frame.Parent = notifHolder
-    corner(frame, 12)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 66)
+    f.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    f.BorderSizePixel = 0
+    f.Position = UDim2.new(1, 380, 0, 0)
+    f.BackgroundTransparency = 1
+    f.Parent = notifHolder
+    corner(f, 10)
 
     local bar = Instance.new("Frame")
-    bar.Size = UDim2.new(0, 4, 1, -24)
-    bar.Position = UDim2.new(0, 12, 0, 12)
+    bar.Size = UDim2.new(0, 3, 1, -22)
+    bar.Position = UDim2.new(0, 12, 0, 11)
     bar.BackgroundColor3 = C.accent
     bar.BorderSizePixel = 0
     bar.BackgroundTransparency = 1
-    bar.Parent = frame
+    bar.Parent = f
     corner(bar, 2)
 
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -50, 0, 22)
-    titleLabel.Position = UDim2.new(0, 30, 0, 12)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title
-    titleLabel.TextColor3 = C.text
-    titleLabel.TextSize = 15
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.TextTransparency = 1
-    titleLabel.Parent = frame
+    local t1 = Instance.new("TextLabel")
+    t1.Size = UDim2.new(1, -40, 0, 20)
+    t1.Position = UDim2.new(0, 26, 0, 12)
+    t1.BackgroundTransparency = 1
+    t1.Text = title
+    t1.TextColor3 = C.text
+    t1.TextSize = 15
+    t1.Font = Enum.Font.GothamBold
+    t1.TextXAlignment = Enum.TextXAlignment.Left
+    t1.TextTransparency = 1
+    t1.Parent = f
 
-    local descLabel = Instance.new("TextLabel")
-    descLabel.Size = UDim2.new(1, -50, 0, 20)
-    descLabel.Position = UDim2.new(0, 30, 0, 36)
-    descLabel.BackgroundTransparency = 1
-    descLabel.Text = desc or ""
-    descLabel.TextColor3 = C.textDim
-    descLabel.TextSize = 13
-    descLabel.Font = Enum.Font.GothamMedium
-    descLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descLabel.TextTransparency = 1
-    descLabel.Parent = frame
+    local t2 = Instance.new("TextLabel")
+    t2.Size = UDim2.new(1, -40, 0, 18)
+    t2.Position = UDim2.new(0, 26, 0, 36)
+    t2.BackgroundTransparency = 1
+    t2.Text = desc or ""
+    t2.TextColor3 = C.textDim
+    t2.TextSize = 13
+    t2.Font = Enum.Font.GothamMedium
+    t2.TextXAlignment = Enum.TextXAlignment.Left
+    t2.TextTransparency = 1
+    t2.Parent = f
 
-    -- Плавное появление
-    tween(frame, TWEEN_SOFT, {
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 0,
-    })
-    tween(bar, TWEEN_SOFT, {BackgroundTransparency = 0})
-    tween(titleLabel, TWEEN_SOFT, {TextTransparency = 0})
-    tween(descLabel, TWEEN_SOFT, {TextTransparency = 0})
+    tween(f, T_SOFT, {Position = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 0})
+    tween(bar, T_SOFT, {BackgroundTransparency = 0})
+    tween(t1, T_SOFT, {TextTransparency = 0})
+    tween(t2, T_SOFT, {TextTransparency = 0})
 
     task.delay(notifDuration, function()
-        tween(frame, TWEEN_SOFT, {
-            Position = UDim2.new(1, 400, 0, 0),
-            BackgroundTransparency = 1,
-        })
-        tween(bar, TWEEN_SOFT, {BackgroundTransparency = 1})
-        tween(titleLabel, TWEEN_SOFT, {TextTransparency = 1})
-        tween(descLabel, TWEEN_SOFT, {TextTransparency = 1})
-        task.wait(0.35)
-        if frame.Parent then frame:Destroy() end
+        tween(f, T_SOFT, {Position = UDim2.new(1, 380, 0, 0), BackgroundTransparency = 1})
+        tween(bar, T_SOFT, {BackgroundTransparency = 1})
+        tween(t1, T_SOFT, {TextTransparency = 1})
+        tween(t2, T_SOFT, {TextTransparency = 1})
+        task.wait(0.3)
+        if f.Parent then f:Destroy() end
     end)
 end
 
--- ═══════════ ПЛАВАЮЩАЯ КНОПКА (открыть/закрыть) ═══════════
+-- ═══════════ ПЛАВАЮЩАЯ КНОПКА ═══════════
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Size = UDim2.new(0, 44, 0, 44)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 20)
 ToggleBtn.BackgroundColor3 = C.bg
-ToggleBtn.Text = "⬢"
+ToggleBtn.Text = "≡"
 ToggleBtn.TextColor3 = C.text
 ToggleBtn.TextSize = 22
 ToggleBtn.Font = Enum.Font.GothamBold
@@ -161,10 +136,9 @@ ToggleBtn.AutoButtonColor = false
 ToggleBtn.Parent = ScreenGui
 corner(ToggleBtn, 22)
 
--- ═══════════ ГЛАВНОЕ ОКНО ═══════════
+-- ═══════════ ОКНО ═══════════
 local Main = Instance.new("Frame")
-Main.Name = "Main"
-Main.Size = UDim2.new(0, 600, 0, 380)
+Main.Size = UDim2.new(0, 620, 0, 380)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.BackgroundColor3 = C.bg
@@ -172,247 +146,188 @@ Main.BorderSizePixel = 0
 Main.Visible = false
 Main.ClipsDescendants = true
 Main.Parent = ScreenGui
-corner(Main, 14)
+corner(Main, 12)
 
 -- Топбар
 local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
-TopBar.Size = UDim2.new(1, 0, 0, 50)
+TopBar.Size = UDim2.new(1, 0, 0, 42)
 TopBar.BackgroundColor3 = C.bg
 TopBar.BorderSizePixel = 0
 TopBar.Parent = Main
-corner(TopBar, 14)
 
 local topFix = Instance.new("Frame")
-topFix.Size = UDim2.new(1, 0, 0, 15)
-topFix.Position = UDim2.new(0, 0, 1, -15)
+topFix.Size = UDim2.new(1, 0, 0, 12)
+topFix.Position = UDim2.new(0, 0, 1, -12)
 topFix.BackgroundColor3 = C.bg
 topFix.BorderSizePixel = 0
 topFix.Parent = TopBar
 
--- Иконка-лого (левая)
-local LogoIcon = Instance.new("Frame")
-LogoIcon.Size = UDim2.new(0, 34, 0, 34)
-LogoIcon.Position = UDim2.new(0, 14, 0.5, -17)
-LogoIcon.BackgroundColor3 = C.iconBg
-LogoIcon.BorderSizePixel = 0
-LogoIcon.Parent = TopBar
-corner(LogoIcon, 8)
-
-local LogoIconStroke = Instance.new("UIStroke")
-LogoIconStroke.Color = C.accent
-LogoIconStroke.Thickness = 1.5
-LogoIconStroke.Transparency = 0.2
-LogoIconStroke.Parent = LogoIcon
-
-local LogoEmoji = Instance.new("TextLabel")
-LogoEmoji.Size = UDim2.new(1, 0, 1, 0)
-LogoEmoji.BackgroundTransparency = 1
-LogoEmoji.Text = "⬢"
-LogoEmoji.TextColor3 = C.text
-LogoEmoji.TextSize = 16
-LogoEmoji.Font = Enum.Font.GothamBold
-LogoEmoji.Parent = LogoIcon
-
--- Иконка-меню (три полоски)
-local MenuIcon = Instance.new("Frame")
-MenuIcon.Size = UDim2.new(0, 34, 0, 34)
-MenuIcon.Position = UDim2.new(0, 56, 0.5, -17)
-MenuIcon.BackgroundTransparency = 1
-MenuIcon.Parent = TopBar
-
-for i = 1, 3 do
-    local line = Instance.new("Frame")
-    line.Size = UDim2.new(0, 20, 0, 2)
-    line.Position = UDim2.new(0, 7, 0, 9 + (i - 1) * 6)
-    line.BackgroundColor3 = C.text
-    line.BorderSizePixel = 0
-    line.Parent = MenuIcon
-    corner(line, 1)
-end
-
--- Заголовок
 local LogoName = Instance.new("TextLabel")
-LogoName.Size = UDim2.new(0, 240, 0, 18)
-LogoName.Position = UDim2.new(0, 100, 0, 8)
+LogoName.Size = UDim2.new(0, 300, 0, 16)
+LogoName.Position = UDim2.new(0, 16, 0, 6)
 LogoName.BackgroundTransparency = 1
-LogoName.Text = "VEXHUB"
+LogoName.Text = "VexHub"
 LogoName.TextColor3 = C.text
-LogoName.TextSize = 15
+LogoName.TextSize = 14
 LogoName.Font = Enum.Font.GothamBold
 LogoName.TextXAlignment = Enum.TextXAlignment.Left
 LogoName.Parent = TopBar
 
 local LogoSub = Instance.new("TextLabel")
-LogoSub.Size = UDim2.new(0, 240, 0, 14)
-LogoSub.Position = UDim2.new(0, 100, 0, 26)
+LogoSub.Size = UDim2.new(0, 300, 0, 12)
+LogoSub.Position = UDim2.new(0, 16, 0, 22)
 LogoSub.BackgroundTransparency = 1
 LogoSub.Text = "Prison Life Edition"
 LogoSub.TextColor3 = C.textDim
-LogoSub.TextSize = 11
+LogoSub.TextSize = 10
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextXAlignment = Enum.TextXAlignment.Left
 LogoSub.Parent = TopBar
 
--- Кнопка свернуть
+-- Круглая скорость
+local SpeedCircle = Instance.new("Frame")
+SpeedCircle.Size = UDim2.new(0, 30, 0, 30)
+SpeedCircle.Position = UDim2.new(0.5, -15, 0.5, -15)
+SpeedCircle.BackgroundColor3 = C.bg
+SpeedCircle.BorderSizePixel = 0
+SpeedCircle.Parent = TopBar
+corner(SpeedCircle, 15)
+
+local scStroke = Instance.new("UIStroke")
+scStroke.Color = Color3.fromRGB(60, 60, 60)
+scStroke.Thickness = 1
+scStroke.Parent = SpeedCircle
+
+local SpeedText = Instance.new("TextLabel")
+SpeedText.Size = UDim2.new(1, 0, 1, 0)
+SpeedText.BackgroundTransparency = 1
+SpeedText.Text = "3.9x"
+SpeedText.TextColor3 = C.text
+SpeedText.TextSize = 11
+SpeedText.Font = Enum.Font.GothamMedium
+SpeedText.Parent = SpeedCircle
+
+task.spawn(function()
+    while SpeedCircle.Parent do
+        local ch = player.Character
+        local hrp = ch and ch:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            SpeedText.Text = string.format("%.1fx", math.max(hrp.Velocity.Magnitude / 16, 1))
+        end
+        task.wait(0.2)
+    end
+end)
+
+-- Кнопки справа
 local Minimize = Instance.new("TextButton")
-Minimize.Size = UDim2.new(0, 32, 0, 32)
-Minimize.Position = UDim2.new(1, -84, 0.5, -16)
-Minimize.BackgroundColor3 = C.iconBg
+Minimize.Size = UDim2.new(0, 26, 0, 26)
+Minimize.Position = UDim2.new(1, -66, 0.5, -13)
+Minimize.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
 Minimize.Text = "—"
 Minimize.TextColor3 = C.text
-Minimize.TextSize = 16
+Minimize.TextSize = 14
 Minimize.Font = Enum.Font.GothamBold
 Minimize.BorderSizePixel = 0
 Minimize.AutoButtonColor = false
 Minimize.Parent = TopBar
-corner(Minimize, 8)
+corner(Minimize, 6)
 
--- Кнопка закрыть
 local Close = Instance.new("TextButton")
-Close.Size = UDim2.new(0, 32, 0, 32)
-Close.Position = UDim2.new(1, -46, 0.5, -16)
-Close.BackgroundColor3 = C.iconBg
+Close.Size = UDim2.new(0, 26, 0, 26)
+Close.Position = UDim2.new(1, -36, 0.5, -13)
+Close.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
 Close.Text = "✕"
 Close.TextColor3 = C.text
-Close.TextSize = 14
+Close.TextSize = 12
 Close.Font = Enum.Font.GothamBold
 Close.BorderSizePixel = 0
 Close.AutoButtonColor = false
 Close.Parent = TopBar
-corner(Close, 8)
+corner(Close, 6)
 
-for _, btn in ipairs({Minimize, Close}) do
-    btn.MouseEnter:Connect(function()
-        tween(btn, TWEEN_FAST, {BackgroundColor3 = C.rowHover})
-    end)
-    btn.MouseLeave:Connect(function()
-        tween(btn, TWEEN_FAST, {BackgroundColor3 = C.iconBg})
-    end)
+for _, b in ipairs({Minimize, Close}) do
+    b.MouseEnter:Connect(function() tween(b, T_FAST, {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}) end)
+    b.MouseLeave:Connect(function() tween(b, T_FAST, {BackgroundColor3 = Color3.fromRGB(28, 28, 28)}) end)
 end
 
 -- Разделитель
-local Divider = Instance.new("Frame")
-Divider.Size = UDim2.new(1, 0, 0, 1)
-Divider.Position = UDim2.new(0, 0, 0, 50)
-Divider.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Divider.BorderSizePixel = 0
-Divider.Parent = Main
+local Div = Instance.new("Frame")
+Div.Size = UDim2.new(1, 0, 0, 1)
+Div.Position = UDim2.new(0, 0, 0, 42)
+Div.BackgroundColor3 = C.line
+Div.BorderSizePixel = 0
+Div.Parent = Main
 
--- ═══════════ КОНТЕНТ ═══════════
+-- ═══════════ САЙДБАР ═══════════
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 150, 1, -43)
+Sidebar.Position = UDim2.new(0, 0, 0, 43)
+Sidebar.BackgroundTransparency = 1
+Sidebar.Parent = Main
+
+local SideLayout = Instance.new("UIListLayout")
+SideLayout.Padding = UDim.new(0, 2)
+SideLayout.Parent = Sidebar
+
+-- Контент
 local Content = Instance.new("Frame")
-Content.Name = "Content"
-Content.Size = UDim2.new(1, -28, 1, -80)
-Content.Position = UDim2.new(0, 14, 0, 66)
+Content.Size = UDim2.new(1, -150, 1, -43)
+Content.Position = UDim2.new(0, 150, 0, 43)
 Content.BackgroundTransparency = 1
 Content.Parent = Main
 
--- Большая иконка слева (как на скрине)
-local BigIcon = Instance.new("Frame")
-BigIcon.Size = UDim2.new(0, 90, 0, 90)
-BigIcon.Position = UDim2.new(0, 0, 0, 0)
-BigIcon.BackgroundColor3 = C.iconBg
-BigIcon.BorderSizePixel = 0
-BigIcon.Parent = Content
-corner(BigIcon, 14)
-
-local BigIconStroke = Instance.new("UIStroke")
-BigIconStroke.Color = C.accent
-BigIconStroke.Thickness = 2
-BigIconStroke.Transparency = 0.15
-BigIconStroke.Parent = BigIcon
-
-local BigEmoji = Instance.new("TextLabel")
-BigEmoji.Size = UDim2.new(1, 0, 1, 0)
-BigEmoji.BackgroundTransparency = 1
-BigEmoji.Text = "🔒"
-BigEmoji.TextSize = 42
-BigEmoji.Parent = BigIcon
-
--- Заголовок вкладки
-local PageTitle = Instance.new("TextLabel")
-PageTitle.Size = UDim2.new(0, 200, 0, 24)
-PageTitle.Position = UDim2.new(0, 110, 0, 24)
-PageTitle.BackgroundTransparency = 1
-PageTitle.Text = "PRISONER"
-PageTitle.TextColor3 = C.text
-PageTitle.TextSize = 17
-PageTitle.Font = Enum.Font.GothamBold
-PageTitle.TextXAlignment = Enum.TextXAlignment.Left
-PageTitle.Parent = Content
-
--- Скролл-фрейм для тоглов
-local ListFrame = Instance.new("ScrollingFrame")
-ListFrame.Size = UDim2.new(1, 0, 1, -110)
-ListFrame.Position = UDim2.new(0, 0, 0, 110)
-ListFrame.BackgroundTransparency = 1
-ListFrame.BorderSizePixel = 0
-ListFrame.ScrollBarThickness = 2
-ListFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
-ListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ListFrame.Parent = Content
-
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0, 6)
-ListLayout.Parent = ListFrame
-ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    ListFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
-end)
-
--- ═══════════ TOGGLE (плоский, круглый, как на скрине) ═══════════
-local function createToggle(parent, text, default, callback)
-    local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, -8, 0, 52)
-    row.BackgroundColor3 = C.rowBg
+-- ═══════════ TOGGLE (плоский, тонкий, как KerryHub) ═══════════
+local function createToggle(parent, label, default, callback)
+    local row = Instance.new("TextButton")
+    row.Size = UDim2.new(1, -20, 0, 34)
+    row.BackgroundColor3 = C.bg
+    row.Text = ""
+    row.AutoButtonColor = false
     row.BorderSizePixel = 0
     row.Parent = parent
-    corner(row, 10)
 
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -80, 1, 0)
-    label.Position = UDim2.new(0, 18, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = C.text
-    label.TextSize = 14
-    label.Font = Enum.Font.GothamMedium
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = row
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -70, 1, 0)
+    lbl.Position = UDim2.new(0, 6, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = label
+    lbl.TextColor3 = C.text
+    lbl.TextSize = 13
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
 
-    -- Круглый toggle (как на скрине)
-    local switch = Instance.new("TextButton")
-    switch.Size = UDim2.new(0, 46, 0, 26)
-    switch.Position = UDim2.new(1, -60, 0.5, -13)
+    local switch = Instance.new("Frame")
+    switch.Size = UDim2.new(0, 40, 0, 22)
+    switch.Position = UDim2.new(1, -46, 0.5, -11)
     switch.BackgroundColor3 = C.toggleOff
-    switch.Text = ""
-    switch.AutoButtonColor = false
     switch.BorderSizePixel = 0
     switch.Parent = row
-    corner(switch, 13)
+    corner(switch, 11)
 
     local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 22, 0, 22)
-    knob.Position = UDim2.new(0, 2, 0.5, -11)
+    knob.Size = UDim2.new(0, 18, 0, 18)
+    knob.Position = UDim2.new(0, 2, 0.5, -9)
     knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     knob.BorderSizePixel = 0
     knob.Parent = switch
-    corner(knob, 11)
+    corner(knob, 9)
 
     local state = default or false
 
-    local function update(animate)
-        local info = animate and TWEEN_FAST or TweenInfo.new(0)
+    local function update(anim)
+        local info = anim and T_FAST or TweenInfo.new(0)
         if state then
             tween(switch, info, {BackgroundColor3 = C.toggleOn})
-            tween(knob, info, {Position = UDim2.new(1, -24, 0.5, -11)})
+            tween(knob, info, {Position = UDim2.new(1, -20, 0.5, -9)})
         else
             tween(switch, info, {BackgroundColor3 = C.toggleOff})
-            tween(knob, info, {Position = UDim2.new(0, 2, 0.5, -11)})
+            tween(knob, info, {Position = UDim2.new(0, 2, 0.5, -9)})
         end
     end
     update(false)
 
-    switch.MouseButton1Click:Connect(function()
+    row.MouseButton1Click:Connect(function()
         state = not state
         update(true)
         if callback then
@@ -421,222 +336,259 @@ local function createToggle(parent, text, default, callback)
         end
     end)
 
-    return {set = function(v) state = v; update(true) end, frame = row}
+    row.MouseEnter:Connect(function() tween(row, T_FAST, {BackgroundColor3 = C.row}) end)
+    row.MouseLeave:Connect(function() tween(row, T_FAST, {BackgroundColor3 = C.bg}) end)
+
+    return row
 end
 
--- ═══════════ ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (через топбар-меню) ═══════════
+-- ═══════════ ТАБЫ ═══════════
 local tabs = {}
-local currentTab = nil
+local currentTab
 
-local function clearList()
-    for _, c in ipairs(ListFrame:GetChildren()) do
-        if not c:IsA("UIListLayout") then c:Destroy() end
-    end
+local function clearContent()
+    for _, c in ipairs(Content:GetChildren()) do c:Destroy() end
 end
 
 local function setTab(name)
     if currentTab == name then return end
     currentTab = name
-    local tabData = tabs[name]
-    if not tabData then return end
 
-    clearList()
+    -- Сайдбар
+    for tabName, data in pairs(tabs) do
+        local active = (tabName == name)
+        tween(data.btn, T_FAST, {TextColor3 = active and C.text or C.textDim})
+        tween(data.underline, T_FAST, {BackgroundTransparency = active and 0 or 1})
+    end
 
-    -- Плавная смена
-    ListFrame.GroupTransparency = 1
-    tween(ListFrame, TWEEN_SOFT, {GroupTransparency = 0})
+    -- Контент
+    clearContent()
+    local page = Instance.new("ScrollingFrame")
+    page.Size = UDim2.new(1, -20, 1, -20)
+    page.Position = UDim2.new(0, 10, 0, 10)
+    page.BackgroundTransparency = 1
+    page.BorderSizePixel = 0
+    page.ScrollBarThickness = 2
+    page.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60)
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.GroupTransparency = 1
+    page.Parent = Content
 
-    -- Анимируем иконку
-    BigEmoji.Text = tabData.icon
-    PageTitle.Text = string.upper(name)
-
-    tween(BigIcon, TWEEN_SOFT, {BackgroundTransparency = 0.4})
-    task.delay(0.15, function()
-        tween(BigIcon, TWEEN_SOFT, {BackgroundTransparency = 0})
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 2)
+    layout.Parent = page
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
     end)
 
-    -- Создаём строки
-    for _, item in ipairs(tabData.items) do
-        createToggle(ListFrame, item.label, item.default, item.callback)
+    tween(page, T_SOFT, {GroupTransparency = 0})
+
+    for _, item in ipairs(tabs[name].items) do
+        createToggle(page, item.label, item.default, item.callback)
+    end
+end
+
+local function createTabButton(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 32)
+    btn.BackgroundColor3 = C.sidebar
+    btn.Text = "  " .. name
+    btn.TextColor3 = C.textDim
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Parent = Sidebar
+    corner(btn, 6)
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 8)
+    pad.Parent = btn
+
+    local underline = Instance.new("Frame")
+    underline.Size = UDim2.new(0, 2, 0, 16)
+    underline.Position = UDim2.new(0, 0, 0.5, -8)
+    underline.BackgroundColor3 = C.accent
+    underline.BorderSizePixel = 0
+    underline.BackgroundTransparency = 1
+    underline.Parent = btn
+    corner(underline, 1)
+
+    btn.MouseEnter:Connect(function()
+        if currentTab ~= name then tween(btn, T_FAST, {BackgroundColor3 = C.row}) end
+    end)
+    btn.MouseLeave:Connect(function()
+        if currentTab ~= name then tween(btn, T_FAST, {BackgroundColor3 = C.sidebar}) end
+    end)
+    btn.MouseButton1Click:Connect(function() setTab(name) end)
+
+    return btn, underline
+end
+
+-- ═══════════ ФУНКЦИИ (состояния) ═══════════
+local State = {
+    infStamina = false, speedBoost = false, fastPunch = false, autoEscape = false, noclip = false,
+    autoArrest = false, weaponESP = false, godMode = false, fastReload = false, instantKill = false,
+    espPrisoners = false, espGuards = false, fullBright = false,
+    antiAFK = false, antiArrest = false,
+}
+
+-- ESP Highlights
+local highlights = {}
+local function clearHL()
+    for _, h in pairs(highlights) do if h and h.Parent then h:Destroy() end end
+    highlights = {}
+end
+local function addHL(char, color)
+    if not char or highlights[char] then return end
+    local h = Instance.new("Highlight")
+    h.FillColor = color
+    h.OutlineColor = color
+    h.FillTransparency = 0.55
+    h.OutlineTransparency = 0.2
+    h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    h.Adornee = char
+    h.Parent = char
+    highlights[char] = h
+end
+local function refreshESP()
+    clearHL()
+    if not (State.espPrisoners or State.espGuards) then return end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local tn = p.Team and p.Team.Name or ""
+            if State.espPrisoners and (tn == "Prisoners" or tn == "Inmates" or tn == "Criminals" or tn == "") then
+                addHL(p.Character, Color3.fromRGB(255, 165, 0))
+            elseif State.espGuards and (tn == "Guards" or tn == "Police" or tn == "Cops") then
+                addHL(p.Character, Color3.fromRGB(0, 170, 255))
+            end
+        end
     end
 end
 
 -- ═══════════ ВКЛАДКИ ═══════════
-tabs["Prisoner"] = {
-    icon = "🔒",
+tabs["Main"] = {
     items = {
-        {label = "Inf Stamina",  default = false, callback = function(v) notify("Prisoner", "Inf Stamina " .. (v and "enabled" or "disabled")) end},
-        {label = "Speed Boost",  default = false, callback = function(v) notify("Prisoner", "Speed Boost " .. (v and "enabled" or "disabled")) end},
-        {label = "Fast Punch",   default = false, callback = function(v) notify("Prisoner", "Fast Punch " .. (v and "enabled" or "disabled")) end},
-        {label = "Auto Escape",  default = false, callback = function(v) notify("Prisoner", "Auto Escape " .. (v and "enabled" or "disabled")) end},
-        {label = "Noclip",       default = false, callback = function(v) notify("Prisoner", "Noclip " .. (v and "enabled" or "disabled")) end},
-    },
-}
-
-tabs["Guard"] = {
-    icon = "🛡",
-    items = {
-        {label = "Auto Arrest",  default = false, callback = function(v) notify("Guard", "Auto Arrest " .. (v and "enabled" or "disabled")) end},
-        {label = "Weapon ESP",   default = false, callback = function(v) notify("Guard", "Weapon ESP " .. (v and "enabled" or "disabled")) end},
-        {label = "God Mode",     default = false, callback = function(v) notify("Guard", "God Mode " .. (v and "enabled" or "disabled")) end},
-        {label = "Fast Reload",  default = false, callback = function(v) notify("Guard", "Fast Reload " .. (v and "enabled" or "disabled")) end},
-        {label = "Instant Kill", default = false, callback = function(v) notify("Guard", "Instant Kill " .. (v and "enabled" or "disabled")) end},
+        {label = "Inf Stamina", default = false, callback = function(v) State.infStamina = v; notify("Player", "Inf Stamina " .. (v and "enabled" or "disabled")) end},
+        {label = "Speed Boost", default = false, callback = function(v)
+            State.speedBoost = v
+            local h = getHum(); if h then h.WalkSpeed = v and 32 or 16 end
+            notify("Player", "Speed Boost " .. (v and "enabled" or "disabled"))
+        end},
+        {label = "Fast Punch",  default = false, callback = function(v) State.fastPunch = v; notify("Player", "Fast Punch " .. (v and "enabled" or "disabled")) end},
+        {label = "Auto Escape", default = false, callback = function(v) State.autoEscape = v; notify("Player", "Auto Escape " .. (v and "enabled" or "disabled")) end},
+        {label = "Noclip",      default = false, callback = function(v) State.noclip = v; notify("Player", "Noclip " .. (v and "enabled" or "disabled")) end},
+        {label = "God Mode",    default = false, callback = function(v) State.godMode = v; notify("Player", "God Mode " .. (v and "enabled" or "disabled")) end},
     },
 }
 
 tabs["Visuals"] = {
-    icon = "◉",
     items = {
-        {label = "ESP Prisoners", default = false, callback = function(v) notify("Visuals", "ESP Prisoners " .. (v and "enabled" or "disabled")) end},
-        {label = "ESP Guards",    default = false, callback = function(v) notify("Visuals", "ESP Guards " .. (v and "enabled" or "disabled")) end},
-        {label = "Full Bright",   default = false, callback = function(v) notify("Visuals", "Full Bright " .. (v and "enabled" or "disabled")) end},
-    },
-}
-
-tabs["Player"] = {
-    icon = "●",
-    items = {
-        {label = "God Mode",      default = false, callback = function(v) notify("Player", "God Mode " .. (v and "enabled" or "disabled")) end},
-        {label = "Anti AFK",      default = false, callback = function(v) notify("Player", "Anti AFK " .. (v and "enabled" or "disabled")) end},
-        {label = "Anti Arrest",   default = false, callback = function(v) notify("Player", "Anti Arrest " .. (v and "enabled" or "disabled")) end},
-        {label = "Reset Character", default = false, callback = function(v)
+        {label = "ESP Prisoners", default = false, callback = function(v) State.espPrisoners = v; refreshESP(); notify("Visuals", "ESP Prisoners " .. (v and "enabled" or "disabled")) end},
+        {label = "ESP Guards",    default = false, callback = function(v) State.espGuards = v; refreshESP(); notify("Visuals", "ESP Guards " .. (v and "enabled" or "disabled")) end},
+        {label = "Full Bright",   default = false, callback = function(v)
+            State.fullBright = v
             if v then
-                local hum = getHum()
-                if hum then hum.Health = 0 end
-                notify("Player", "Character reset")
+                Lighting.Ambient = Color3.fromRGB(178,178,178)
+                Lighting.Brightness = 3
+                Lighting.OutdoorAmbient = Color3.fromRGB(178,178,178)
+                Lighting.FogEnd = 1e5
+            else
+                Lighting.Ambient = Color3.fromRGB(70,70,70)
+                Lighting.Brightness = 1
+                Lighting.OutdoorAmbient = Color3.fromRGB(128,128,128)
             end
+            notify("Visuals", "Full Bright " .. (v and "enabled" or "disabled"))
         end},
     },
 }
 
 tabs["Settings"] = {
-    icon = "⚙",
     items = {
         {label = "Notifications", default = true, callback = function(v)
             notifEnabled = v
-            if v then notify("VEXHUB", "Notifications enabled") end
+            if v then notify("VexHub", "Notifications enabled") end
         end},
     },
 }
 
+-- Авто-создание кнопок табов (порядок как на скрине)
+for _, name in ipairs({"Main", "Visuals", "Settings"}) do
+    local btn, under = createTabButton(name)
+    tabs[name].btn = btn
+    tabs[name].underline = under
+end
+
 -- ═══════════ ОТКРЫТИЕ / ЗАКРЫТИЕ ═══════════
 local function openUI()
     Main.Visible = true
-    Main.Size = UDim2.new(0, 600, 0, 380)
     Main.BackgroundTransparency = 1
-    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-
-    tween(Main, TWEEN_SOFT, {BackgroundTransparency = 0})
-
-    if not currentTab then setTab("Prisoner") end
+    tween(Main, T_SOFT, {BackgroundTransparency = 0})
+    if not currentTab then setTab("Main") end
 end
 
 local function closeUI()
-    tween(Main, TWEEN_SOFT, {BackgroundTransparency = 1})
-    task.wait(0.3)
+    tween(Main, T_SOFT, {BackgroundTransparency = 1})
+    task.wait(0.28)
     Main.Visible = false
     Main.BackgroundTransparency = 0
 end
 
--- Плавающая кнопка
-local btnDragging, btnDragStart, btnStartPos = false, nil, nil
-local btnDidMove = false
+-- Плавающая кнопка: перетаскивание + клик
+local btnDrag, btnDidMove = false, false
+local btnStart, btnPos
 
 ToggleBtn.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        btnDragging = true
-        btnDidMove = false
-        btnDragStart = i.Position
-        btnStartPos = ToggleBtn.Position
+        btnDrag = true; btnDidMove = false
+        btnStart = i.Position; btnPos = ToggleBtn.Position
     end
 end)
-
 UserInputService.InputChanged:Connect(function(i)
-    if btnDragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-        local delta = i.Position - btnDragStart
-        if delta.Magnitude > 4 then btnDidMove = true end
-        ToggleBtn.Position = UDim2.new(
-            btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X,
-            btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y
-        )
+    if btnDrag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local d = i.Position - btnStart
+        if d.Magnitude > 4 then btnDidMove = true end
+        ToggleBtn.Position = UDim2.new(btnPos.X.Scale, btnPos.X.Offset + d.X, btnPos.Y.Scale, btnPos.Y.Offset + d.Y)
     end
 end)
-
 UserInputService.InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        btnDragging = false
+        btnDrag = false
     end
 end)
-
 ToggleBtn.MouseButton1Click:Connect(function()
     if btnDidMove then return end
     if Main.Visible then closeUI() else openUI() end
 end)
 
--- Перетаскивание окна за топбар
-local winDragging, winDragStart, winStartPos = false, nil, nil
+-- Перетаскивание окна
+local wDrag, wStart, wPos = false, nil, nil
 TopBar.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        winDragging = true
-        winDragStart = i.Position
-        winStartPos = Main.Position
+        wDrag = true; wStart = i.Position; wPos = Main.Position
     end
 end)
-
 UserInputService.InputChanged:Connect(function(i)
-    if winDragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-        local delta = i.Position - winDragStart
-        Main.Position = UDim2.new(
-            winStartPos.X.Scale, winStartPos.X.Offset + delta.X,
-            winStartPos.Y.Scale, winStartPos.Y.Offset + delta.Y
-        )
+    if wDrag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local d = i.Position - wStart
+        Main.Position = UDim2.new(wPos.X.Scale, wPos.X.Offset + d.X, wPos.Y.Scale, wPos.Y.Offset + d.Y)
     end
 end)
-
 UserInputService.InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        winDragging = false
+        wDrag = false
     end
 end)
 
--- Кнопки топбара
 Minimize.MouseButton1Click:Connect(closeUI)
 Close.MouseButton1Click:Connect(function()
     closeUI()
-    task.wait(0.35)
+    task.wait(0.32)
     ScreenGui.Enabled = false
 end)
 
--- Меню иконка (три полоски) — открывает выбор вкладки
-MenuIcon.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-        -- Простой цикл по вкладкам
-        local order = {"Prisoner", "Guard", "Visuals", "Player", "Settings"}
-        local idx = 1
-        for k, v in ipairs(order) do
-            if v == currentTab then idx = k end
-        end
-        idx = idx % #order + 1
-        setTab(order[idx])
-    end
-end)
-
-MenuIcon.MouseEnter:Connect(function()
-    for _, line in ipairs(MenuIcon:GetChildren()) do
-        if line:IsA("Frame") then
-            tween(line, TWEEN_FAST, {BackgroundColor3 = C.accent})
-        end
-    end
-end)
-MenuIcon.MouseLeave:Connect(function()
-    for _, line in ipairs(MenuIcon:GetChildren()) do
-        if line:IsA("Frame") then
-            tween(line, TWEEN_FAST, {BackgroundColor3 = C.text})
-        end
-    end
-end)
-
--- ═══════════ ХОТКЕЙ ═══════════
+-- Хоткей
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.RightShift then
@@ -645,5 +597,5 @@ UserInputService.InputBegan:Connect(function(input, gpe)
 end)
 
 -- Приветствие
-task.wait(0.6)
-notify("VEXHUB", "Successfully loaded. Press RightShift to toggle")
+task.wait(0.5)
+notify("VexHub", "Successfully loaded. Press RightShift to toggle")
