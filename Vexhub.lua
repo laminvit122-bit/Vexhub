@@ -1,6 +1,6 @@
 --[[
-    VexHub - Prison Life Edition
-    Full UI Script for Executors
+    VexHub - Prison Life Edition (Updated)
+    Fixed Toggle Button + Custom Image Icons + 10% Transparency
 --]]
 
 if getgenv().VexHub_Loaded then
@@ -14,18 +14,15 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Stats = game:GetService("Stats")
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Palette
+-- Palette (10% Transparency applied)
 local C_BG         = Color3.fromRGB(13, 13, 13)
 local C_SIDEBAR    = Color3.fromRGB(11, 11, 11)
 local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
-local C_DIVIDER    = Color3.fromRGB(31, 31, 31)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246) -- #8B5CF6
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
 local C_TOGGLE_ON  = Color3.fromRGB(255, 255, 255)
@@ -59,16 +56,6 @@ local function createCorner(parent, radius)
     return corner
 end
 
-local function createPadding(parent, top, bottom, left, right)
-    local padding = Instance.new("UIPadding")
-    padding.PaddingTop = UDim.new(0, top or 0)
-    padding.PaddingBottom = UDim.new(0, bottom or 0)
-    padding.PaddingLeft = UDim.new(0, left or 0)
-    padding.PaddingRight = UDim.new(0, right or 0)
-    padding.Parent = parent
-    return padding
-end
-
 -- Notifications Container
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
@@ -92,7 +79,7 @@ local function notify(title, msg)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 66)
     card.BackgroundColor3 = C_CARD
-    card.BackgroundTransparency = 1
+    card.BackgroundTransparency = 0.1
     card.ClipsDescendants = true
     card.Parent = NotifContainer
     createCorner(card, 10)
@@ -127,10 +114,9 @@ local function notify(title, msg)
     mLabel.TextTransparency = 1
     mLabel.Parent = card
 
-    -- Slide In Anim
     card.Position = UDim2.new(0, 50, 0, 0)
     TweenService:Create(card, TweenInfo.new(0.26, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 0,
+        BackgroundTransparency = 0.1,
         Position = UDim2.new(0, 0, 0, 0)
     }):Play()
     TweenService:Create(tLabel, TweenInfo.new(0.26), {TextTransparency = 0}):Play()
@@ -158,6 +144,7 @@ MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 780, 0, 420)
 MainFrame.Position = UDim2.new(0.5, -390, 0.5, -210)
 MainFrame.BackgroundColor3 = C_BG
+MainFrame.BackgroundTransparency = 0.1 -- 10% Transparency
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 createCorner(MainFrame, 12)
@@ -167,6 +154,7 @@ local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
 Sidebar.Size = UDim2.new(0, 220, 1, 0)
 Sidebar.BackgroundColor3 = C_SIDEBAR
+Sidebar.BackgroundTransparency = 0.1 -- 10% Transparency
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = MainFrame
 
@@ -225,6 +213,7 @@ local ProfileCard = Instance.new("Frame")
 ProfileCard.Size = UDim2.new(1, -24, 0, 50)
 ProfileCard.Position = UDim2.new(0, 12, 1, -60)
 ProfileCard.BackgroundColor3 = C_CARD
+ProfileCard.BackgroundTransparency = 0.1
 ProfileCard.Parent = Sidebar
 createCorner(ProfileCard, 8)
 
@@ -284,12 +273,11 @@ ContentTop.Size = UDim2.new(1, 0, 0, 60)
 ContentTop.BackgroundTransparency = 1
 ContentTop.Parent = Content
 
-local TabIconHeader = Instance.new("TextLabel")
-TabIconHeader.Size = UDim2.new(0, 24, 0, 24)
-TabIconHeader.Position = UDim2.new(0, 18, 0, 18)
+local TabIconHeader = Instance.new("ImageLabel")
+TabIconHeader.Size = UDim2.new(0, 20, 0, 20)
+TabIconHeader.Position = UDim2.new(0, 18, 0, 20)
 TabIconHeader.BackgroundTransparency = 1
-TabIconHeader.Text = "🏠"
-TabIconHeader.TextSize = 18
+TabIconHeader.ImageColor3 = C_ACCENT
 TabIconHeader.Parent = ContentTop
 
 local TabTitleHeader = Instance.new("TextLabel")
@@ -308,6 +296,7 @@ local SearchBar = Instance.new("Frame")
 SearchBar.Size = UDim2.new(0, 180, 0, 32)
 SearchBar.Position = UDim2.new(1, -195, 0, 14)
 SearchBar.BackgroundColor3 = C_CARD
+SearchBar.BackgroundTransparency = 0.1
 SearchBar.Parent = ContentTop
 createCorner(SearchBar, 8)
 
@@ -409,6 +398,7 @@ local function createToggle(parent, title, defaultState, callback)
     local row = Instance.new("TextButton")
     row.Size = UDim2.new(1, 0, 0, 44)
     row.BackgroundColor3 = C_CARD
+    row.BackgroundTransparency = 0.1
     row.AutoButtonColor = false
     row.Text = ""
     row.Parent = parent
@@ -468,6 +458,7 @@ local function createButton(parent, title, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 44)
     btn.BackgroundColor3 = C_CARD
+    btn.BackgroundTransparency = 0.1
     btn.AutoButtonColor = false
     btn.Text = ""
     btn.Parent = parent
@@ -502,6 +493,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 56)
     card.BackgroundColor3 = C_CARD
+    card.BackgroundTransparency = 0.1
     card.Parent = parent
     createCorner(card, 10)
 
@@ -583,37 +575,37 @@ local function selectTab(name)
         if tabName == name then
             TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
             data.lbl.TextColor3 = C_ACCENT
-            data.iconLbl.TextColor3 = C_ACCENT
-            TabIconHeader.Text = data.icon
+            data.iconImg.ImageColor3 = C_ACCENT
+            TabIconHeader.Image = data.iconAsset
             TabTitleHeader.Text = data.label
             clearContent()
             data.build()
         else
             TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play()
             data.lbl.TextColor3 = C_MUTED
-            data.iconLbl.TextColor3 = C_MUTED
+            data.iconImg.ImageColor3 = C_MUTED
         end
     end
 end
 
-local function registerTab(name, icon, label, buildFunc, order)
+local function registerTab(name, iconAsset, label, buildFunc, order)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = C_SIDEBAR
+    btn.BackgroundTransparency = 0.1
     btn.AutoButtonColor = false
     btn.Text = ""
     btn.LayoutOrder = order
     btn.Parent = TabListFrame
     createCorner(btn, 8)
 
-    local iconLbl = Instance.new("TextLabel")
-    iconLbl.Size = UDim2.new(0, 24, 1, 0)
-    iconLbl.Position = UDim2.new(0, 10, 0, 0)
-    iconLbl.BackgroundTransparency = 1
-    iconLbl.Text = icon
-    iconLbl.TextColor3 = C_MUTED
-    iconLbl.TextSize = 14
-    iconLbl.Parent = btn
+    local iconImg = Instance.new("ImageLabel")
+    iconImg.Size = UDim2.new(0, 18, 0, 18)
+    iconImg.Position = UDim2.new(0, 12, 0.5, -9)
+    iconImg.BackgroundTransparency = 1
+    iconImg.Image = iconAsset
+    iconImg.ImageColor3 = C_MUTED
+    iconImg.Parent = btn
 
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -40, 1, 0)
@@ -644,10 +636,10 @@ local function registerTab(name, icon, label, buildFunc, order)
 
     tabs[name] = {
         btn = btn,
-        icon = icon,
+        iconAsset = iconAsset,
         label = label,
         lbl = lbl,
-        iconLbl = iconLbl,
+        iconImg = iconImg,
         build = buildFunc
     }
 end
@@ -664,6 +656,7 @@ local function buildHomeTab()
     local card1 = Instance.new("Frame")
     card1.Size = UDim2.new(1, 0, 0, 130)
     card1.BackgroundColor3 = C_CARD
+    card1.BackgroundTransparency = 0.1
     card1.Parent = sf
     createCorner(card1, 10)
 
@@ -717,6 +710,7 @@ local function buildHomeTab()
         local b = Instance.new("Frame")
         b.Size = UDim2.new(0, 65, 1, 0)
         b.BackgroundColor3 = C_SIDEBAR
+        b.BackgroundTransparency = 0.1
         b.Parent = badgeFrame
         createCorner(b, 4)
 
@@ -757,10 +751,10 @@ local function buildHomeTab()
     local card2 = Instance.new("Frame")
     card2.Size = UDim2.new(1, 0, 0, 130)
     card2.BackgroundColor3 = C_CARD
+    card2.BackgroundTransparency = 0.1
     card2.Parent = sf
     createCorner(card2, 10)
 
-    -- FPS Counter
     local fpsFaint = Instance.new("TextLabel")
     fpsFaint.Size = UDim2.new(0.45, 0, 0, 14)
     fpsFaint.Position = UDim2.new(0, 16, 0, 16)
@@ -783,7 +777,6 @@ local function buildHomeTab()
     fpsVal.TextXAlignment = Enum.TextXAlignment.Left
     fpsVal.Parent = card2
 
-    -- PING Counter
     local pingFaint = Instance.new("TextLabel")
     pingFaint.Size = UDim2.new(0.45, 0, 0, 14)
     pingFaint.Position = UDim2.new(0.5, 0, 0, 16)
@@ -806,7 +799,6 @@ local function buildHomeTab()
     pingVal.TextXAlignment = Enum.TextXAlignment.Left
     pingVal.Parent = card2
 
-    -- Bottom Stats
     local plrsFaint = Instance.new("TextLabel")
     plrsFaint.Size = UDim2.new(0.45, 0, 0, 14)
     plrsFaint.Position = UDim2.new(0, 16, 0, 85)
@@ -829,7 +821,6 @@ local function buildHomeTab()
     sessFaint.TextXAlignment = Enum.TextXAlignment.Left
     sessFaint.Parent = card2
 
-    -- Live Stats Loop
     task.spawn(function()
         while card2 and card2.Parent do
             local fps = math.floor(Stats.Workspace.Heartbeat:GetValue() > 0 and (1 / Stats.Workspace.Heartbeat:GetValue()) or 60)
@@ -850,6 +841,7 @@ local function buildHomeTab()
     local card3 = Instance.new("Frame")
     card3.Size = UDim2.new(1, 0, 0, 130)
     card3.BackgroundColor3 = C_CARD
+    card3.BackgroundTransparency = 0.1
     card3.Parent = sf
     createCorner(card3, 10)
 
@@ -857,7 +849,7 @@ local function buildHomeTab()
     gameIcon.Size = UDim2.new(0, 50, 0, 50)
     gameIcon.Position = UDim2.new(0, 16, 0, 16)
     gameIcon.BackgroundColor3 = C_SIDEBAR
-    gameIcon.Image = "rbxassetid://1044976148" -- Game Icon Placeholder / Prison Life
+    gameIcon.Image = "rbxassetid://1044976148"
     gameIcon.Parent = card3
     createCorner(gameIcon, 8)
 
@@ -883,7 +875,6 @@ local function buildHomeTab()
     gameSub.TextXAlignment = Enum.TextXAlignment.Left
     gameSub.Parent = card3
 
-    -- Buttons Row
     local btnRow = Instance.new("Frame")
     btnRow.Size = UDim2.new(1, -32, 0, 34)
     btnRow.Position = UDim2.new(0, 16, 0, 80)
@@ -899,6 +890,7 @@ local function buildHomeTab()
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(0.25, -6, 1, 0)
         btn.BackgroundColor3 = C_SIDEBAR
+        btn.BackgroundTransparency = 0.1
         btn.AutoButtonColor = false
         btn.Text = title
         btn.TextColor3 = C_TEXT
@@ -959,38 +951,26 @@ local function buildMainTab()
     createToggle(sf, "God Mode", false, function(v)
         notify("Main", "God Mode " .. (v and "enabled" or "disabled"))
     end)
-    createToggle(sf, "Kill Aura", false, function(v)
-        notify("Main", "Kill Aura " .. (v and "enabled" or "disabled"))
-    end)
-    createToggle(sf, "Auto Taser Bypass", false, function(v)
-        notify("Main", "Auto Taser Bypass " .. (v and "enabled" or "disabled"))
-    end)
 end
 
--- Player Tab
+-- Visuals / Player Tab
 local function buildPlayerTab()
     local sf = makeScrollingFrame()
 
     createToggle(sf, "God Mode", false, function(v)
-        notify("Player", "God Mode " .. (v and "enabled" or "disabled"))
+        notify("Visuals", "God Mode " .. (v and "enabled" or "disabled"))
     end)
     createToggle(sf, "Anti AFK", true, function(v)
-        notify("Player", "Anti AFK " .. (v and "enabled" or "disabled"))
+        notify("Visuals", "Anti AFK " .. (v and "enabled" or "disabled"))
     end)
     createToggle(sf, "Anti Arrest", false, function(v)
-        notify("Player", "Anti Arrest " .. (v and "enabled" or "disabled"))
+        notify("Visuals", "Anti Arrest " .. (v and "enabled" or "disabled"))
     end)
     createButton(sf, "Reset Character", function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.Health = 0
-            notify("Player", "Reset Character triggered")
+            notify("Visuals", "Reset Character triggered")
         end
-    end)
-    createToggle(sf, "Infinite Jump", false, function(v)
-        notify("Player", "Infinite Jump " .. (v and "enabled" or "disabled"))
-    end)
-    createToggle(sf, "Invisibility", false, function(v)
-        notify("Player", "Invisibility " .. (v and "enabled" or "disabled"))
     end)
 end
 
@@ -1014,20 +994,13 @@ local function buildSettingsTab()
         getgenv().VexHub_Loaded = false
         ScreenGui:Destroy()
     end)
-
-    createToggle(sf, "Streamer Mode", false, function(v)
-        notify("Settings", "Streamer Mode " .. (v and "enabled" or "disabled"))
-    end)
-    createToggle(sf, "Dark Mode Contrast", false, function(v)
-        notify("Settings", "Contrast updated")
-    end)
 end
 
--- Register Tabs
-registerTab("Home", "🏠", "Home", buildHomeTab, 1)
-registerTab("Main", "▣", "Main", buildMainTab, 2)
-registerTab("Player", "👤", "Player", buildPlayerTab, 3)
-registerTab("Settings", "⚙", "Settings", buildSettingsTab, 4)
+-- Register Tabs with New Asset IDs
+registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
+registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
+registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
+registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
 
 -- Select Default Tab
 selectTab("Home")
@@ -1068,18 +1041,25 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Toggle Visibility / Animations
+-- Toggle Visibility / Animations (FIXED RE-OPEN ISSUE)
 local uiVisible = true
+local isAnimating = false
 
 local function setUIVisible(state)
+    if isAnimating then return end
+    isAnimating = true
     uiVisible = state
+
     if uiVisible then
         MainFrame.Visible = true
-        MainFrame.ScaleTo15 = Vector2.new(1, 1)
-        TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+        local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
             Size = UDim2.new(0, 780, 0, 420),
-            BackgroundTransparency = 0
-        }):Play()
+            BackgroundTransparency = 0.1
+        })
+        tw:Play()
+        tw.Completed:Connect(function()
+            isAnimating = false
+        end)
     else
         local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 780, 0, 0),
@@ -1090,16 +1070,18 @@ local function setUIVisible(state)
             if not uiVisible then
                 MainFrame.Visible = false
             end
+            isAnimating = false
         end)
     end
 end
 
--- Floating Toggle Pill Button
+-- Floating Toggle Button
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
 FloatingBtn.Position = UDim2.new(0, 20, 0.5, -20)
 FloatingBtn.BackgroundColor3 = C_CARD
+FloatingBtn.BackgroundTransparency = 0.1
 FloatingBtn.Text = "≡"
 FloatingBtn.TextColor3 = C_ACCENT
 FloatingBtn.Font = Enum.Font.GothamBold
