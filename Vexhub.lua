@@ -102,7 +102,7 @@ local function notify(title, msg)
 
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 56)
-    card.Position = UDim2.new(1, 100, 0, 0)
+    card.Position = UDim2.new(1, 100, 0, 0) -- Старт за пределами экрана
     card.BackgroundColor3 = C_CARD
     card.BackgroundTransparency = 1
     card.ClipsDescendants = true
@@ -140,14 +140,14 @@ local function notify(title, msg)
     mLabel.Text = msg
     mLabel.Parent = card
 
-    -- Slide in + Fade in
+    -- Плавное появление (Slide in + Fade in)
     local tweenInfoIn = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     TweenService:Create(card, tweenInfoIn, {BackgroundTransparency = 0.15, Position = UDim2.new(0, 0, 0, 0)}):Play()
     TweenService:Create(bar, tweenInfoIn, {BackgroundTransparency = 0}):Play()
     TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
     TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
 
-    -- Fade out + Slide out
+    -- Плавное исчезновение (Fade out + Slide out)
     task.delay(notifDuration, function()
         if card and card.Parent then
             local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
@@ -189,12 +189,14 @@ SideHeader.Size = UDim2.new(1, 0, 0, 60)
 SideHeader.BackgroundTransparency = 1
 SideHeader.Parent = Sidebar
 
--- Указанная текстура логотипа рядом с VexHub
-local LogoIcon = Instance.new("ImageLabel")
+local LogoIcon = Instance.new("TextLabel")
 LogoIcon.Size = UDim2.new(0, 24, 0, 24)
-LogoIcon.Position = UDim2.new(0, 14, 0, 18)
+LogoIcon.Position = UDim2.new(0, 16, 0, 18)
 LogoIcon.BackgroundTransparency = 1
-LogoIcon.Image = "rbxassetid://92044950923835"
+LogoIcon.Text = "⬢"
+LogoIcon.TextColor3 = C_ACCENT
+LogoIcon.TextSize = 18
+LogoIcon.Font = Enum.Font.GothamBold
 LogoIcon.Parent = SideHeader
 
 local LogoTitle = Instance.new("TextLabel")
@@ -919,8 +921,7 @@ end
 local function buildPlayerTab()
     local sf = makeScrollingFrame()
 
-    -- Переименовано просто в Esp
-    createToggle(sf, "Esp", FeatureState.EspEnabled, function(v)
+    createToggle(sf, "ESP (Team Colors)", FeatureState.EspEnabled, function(v)
         FeatureState.EspEnabled = v
     end)
 
@@ -1069,8 +1070,10 @@ RunService.RenderStepped:Connect(function()
         local shortestDistance = FeatureState.FovRadius
 
         for _, plr in ipairs(Players:GetPlayers()) do
+            -- Ignore Self
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                 
+                -- Team Check (Skip Team Mates)
                 local isTeammate = FeatureState.TeamCheck and (plr.Team == LocalPlayer.Team)
                 
                 if not isTeammate then
@@ -1080,6 +1083,7 @@ RunService.RenderStepped:Connect(function()
                     if onScreen then
                         local dist = (Vector2.new(headPos.X, headPos.Y) - centerScreen).Magnitude
                         
+                        -- Distance check + Wall check
                         if dist < shortestDistance and isTargetVisible(head) then
                             shortestDistance = dist
                             closestPlayer = plr
