@@ -1,6 +1,5 @@
 --[[
-    VexHub - Prison Life Edition
-    Created by DevScripts
+    VexHub - Prison Life Edition (Ultimate Update)
 --]]
 
 if game.PlaceId ~= 155615604 then
@@ -20,9 +19,180 @@ local Stats = game:GetService("Stats")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
+
+-- Translations Dictionary
+local CurrentLang = "RU"
+local Translations = {
+    RU = {
+        Home = "Главная",
+        Main = "Основные",
+        Visuals = "Визуалы",
+        Settings = "Настройки",
+        AimEnabled = "Aimbot",
+        TargetCriminals = "Цель: Преступники (Красные)",
+        TargetGuards = "Цель: Охрана (Синие)",
+        TargetInmates = "Цель: Заключенные (Оранжевые)",
+        WallCheck = "Проверка стен",
+        FovRadius = "Радиус FOV",
+        InfStamina = "Бесконечная выносливость",
+        SpeedHack = "Speed Hack",
+        SpeedHackVal = "Скорость бега",
+        FastPunch = "Быстрый удар",
+        Noclip = "Проход сквозь стены (Noclip)",
+        EspEnabled = "Подсветка игроков (ESP)",
+        Fullbright = "Светлая карта (Fullbright)",
+        AntiAFK = "Анти-АФК",
+        ResetChar = "Сбросить персонажа",
+        Rejoin = "Перезайти",
+        ServerHop = "Сменить сервер",
+        Notifications = "Уведомления",
+        SaveConfig = "Сохранить конфиг",
+        LoadConfig = "Загрузить конфиг",
+        Language = "Язык / Language",
+        UnloadUI = "Выгрузить скрипт",
+        -- Tooltips
+        TT_AimEnabled = "Автоматическое наведение прицела на игроков в зоне FOV.",
+        TT_TargetCriminals = "Разрешить наведение на красную команду.",
+        TT_TargetGuards = "Разрешить наведение на синюю команду.",
+        TT_TargetInmates = "Разрешить наведение на оранжевую команду.",
+        TT_WallCheck = "Не наводиться, если игрок за стеной.",
+        TT_FovRadius = "Размер круга захвата цели для Aimbot.",
+        TT_InfStamina = "Выносливость при беге больше не расходуется.",
+        TT_SpeedHack = "Включает пользовательскую скорость передвижения.",
+        TT_SpeedHackVal = "Устанавливает значение скорости бега персонажа.",
+        TT_FastPunch = "Убирает задержку между ударами кулаками.",
+        TT_Noclip = "Позволяет ходить сквозь стены и объекты.",
+        TT_EspEnabled = "Подсвечивает всех игроков силуэтами их команд.",
+        TT_Fullbright = "Делает карту полностью освещенной без теней и ночи.",
+        TT_AntiAFK = "Предотвращает кик из игры за бездействие.",
+        TT_Rejoin = "Перезаходит на текущий сервер.",
+        TT_ServerHop = "Автоматически находит и подключает к новому серверу.",
+        TT_SaveConfig = "Сохраняет текущие настройки в файл.",
+        TT_LoadConfig = "Загружает ранее сохраненные настройки."
+    },
+    EN = {
+        Home = "Home",
+        Main = "Main",
+        Visuals = "Visuals",
+        Settings = "Settings",
+        AimEnabled = "Aimbot",
+        TargetCriminals = "Target: Criminals (Red)",
+        TargetGuards = "Target: Guards (Blue)",
+        TargetInmates = "Target: Inmates (Orange)",
+        WallCheck = "Wall Check",
+        FovRadius = "FOV Radius",
+        InfStamina = "Infinite Stamina",
+        SpeedHack = "Speed Hack",
+        SpeedHackVal = "Movement Speed",
+        FastPunch = "Fast Punch",
+        Noclip = "Noclip",
+        EspEnabled = "Player ESP",
+        Fullbright = "Fullbright Map",
+        AntiAFK = "Anti-AFK",
+        ResetChar = "Reset Character",
+        Rejoin = "Rejoin Server",
+        ServerHop = "Server Hop",
+        Notifications = "Notifications",
+        SaveConfig = "Save Config",
+        LoadConfig = "Load Config",
+        Language = "Language / Язык",
+        UnloadUI = "Unload Script",
+        -- Tooltips
+        TT_AimEnabled = "Automatically aims at players inside the FOV circle.",
+        TT_TargetCriminals = "Allow aimbotting on Criminals team.",
+        TT_TargetGuards = "Allow aimbotting on Guards team.",
+        TT_TargetInmates = "Allow aimbotting on Inmates team.",
+        TT_WallCheck = "Do not aim if target is behind walls.",
+        TT_FovRadius = "Adjusts the target acquisition circle size.",
+        TT_InfStamina = "Sprint stamina will never deplete.",
+        TT_SpeedHack = "Enables custom walkspeed multiplier.",
+        TT_SpeedHackVal = "Set custom movement speed value.",
+        TT_FastPunch = "Removes cooldown delay between punches.",
+        TT_Noclip = "Allows walking through walls and structures.",
+        TT_EspEnabled = "Displays player highlights through obstacles.",
+        TT_Fullbright = "Makes the entire map bright removing fog and night.",
+        TT_AntiAFK = "Prevents idle disconnect kicks.",
+        TT_Rejoin = "Rejoins the current server session.",
+        TT_ServerHop = "Searches for and joins a different active server.",
+        TT_SaveConfig = "Saves current feature configuration.",
+        TT_LoadConfig = "Loads saved feature settings."
+    },
+    AR = {
+        Home = "الرئيسية",
+        Main = "الرئيسي",
+        Visuals = "البصريات",
+        Settings = "الإعدادات",
+        AimEnabled = "التصويب التلقائي",
+        TargetCriminals = "الهدف: المجرمين (أحمر)",
+        TargetGuards = "الهدف: الحراس (أزرق)",
+        TargetInmates = "الهدف: السجناء (برتقالي)",
+        WallCheck = "فحص الجدران",
+        FovRadius = "نطاق FOV",
+        InfStamina = "لياقت بدنية غير محدودة",
+        SpeedHack = "تسريع الحركة",
+        SpeedHackVal = "سرعة المشي",
+        FastPunch = "لكم سريع",
+        Noclip = "اختراق الجدران",
+        EspEnabled = "كشف اللاعبين (ESP)",
+        Fullbright = "إضاءة الخريطة بالكامل",
+        AntiAFK = "منع الطرد لعدم النشاط",
+        ResetChar = "إعادة ضبط الشخصية",
+        Rejoin = "إعادة الانضمام",
+        ServerHop = "تغيير الخادم",
+        Notifications = "الإشعارات",
+        SaveConfig = "حفظ الإعدادات",
+        LoadConfig = "تحميل الإعدادات",
+        Language = "اللغة",
+        UnloadUI = "إغلاق السكريبت",
+        -- Tooltips
+        TT_AimEnabled = "يصوب تلقائياً على اللاعبين داخل دائرة الرؤية.",
+        TT_TargetCriminals = "السماح بالتصويب على فريق المجرمين.",
+        TT_TargetGuards = "السماح بالتصويب على فريق الحراس.",
+        TT_TargetInmates = "السماح بالتصويب على فريق السجناء.",
+        TT_WallCheck = "عدم التصويب إذا كان الهدف خلف جدار.",
+        TT_FovRadius = "تعديل حجم دائرة التصويب.",
+        TT_InfStamina = "لا تنفذ طاقة الركض أبداً.",
+        TT_SpeedHack = "تفعيل سرعة حركة مخصصة.",
+        TT_SpeedHackVal = "تحديد قيمة سرعة الحركة.",
+        TT_FastPunch = "إزالة التأخير بين اللكمات.",
+        TT_Noclip = "يسمح بالمرور عبر الجدران.",
+        TT_EspEnabled = "إظهار اللاعبين عبر الجدران.",
+        TT_Fullbright = "جعل الخريطة مضاءة بالكامل بدون ظلام.",
+        TT_AntiAFK = "يمنع طردك عند التوقف عن اللعب.",
+        TT_Rejoin = "إعادة الدخول لنفس الخادم.",
+        TT_ServerHop = "البحث عن خادم آخر والانضمام إليه.",
+        TT_SaveConfig = "حفظ التكوين الحالي في ملف.",
+        TT_LoadConfig = "تحميل التكوين المحفوظ."
+    }
+}
+
+local function tr(key)
+    return (Translations[CurrentLang] and Translations[CurrentLang][key]) or (Translations["EN"][key] or key)
+end
+
+-- Feature State
+local FeatureState = {
+    AimEnabled = false,
+    FovRadius = 100,
+    WallCheck = true,
+    TargetCriminals = true,
+    TargetGuards = true,
+    TargetInmates = true,
+    EspEnabled = false,
+    Fullbright = false,
+    InfStamina = false,
+    SpeedHack = false,
+    SpeedHackValue = 32,
+    Noclip = false,
+    FastPunch = false,
+    AntiAFK = true
+}
 
 -- Colors
 local C_BG         = Color3.fromRGB(13, 13, 13)
@@ -36,24 +206,8 @@ local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
 local C_FAINT      = Color3.fromRGB(90, 90, 90)
-local C_GREEN      = Color3.fromRGB(34, 197, 94)
 
--- Feature Settings
-local FeatureState = {
-    AimEnabled = false,
-    FovRadius = 100,
-    TeamCheck = true,
-    WallCheck = true,
-    EspEnabled = false,
-    InfStamina = false,
-    SpeedBoost = false,
-    Noclip = false,
-    FastPunch = false,
-    GodMode = false,
-    AntiAFK = true
-}
-
--- Container
+-- Container Setup
 local targetParent = CoreGui
 if gethui then targetParent = gethui() end
 
@@ -71,7 +225,7 @@ local function createCorner(parent, radius)
     return corner
 end
 
--- FOV Circle (Fixed in Center)
+-- FOV Circle
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = C_ACCENT
 FovCircle.Thickness = 1.5
@@ -80,7 +234,7 @@ FovCircle.Radius = FeatureState.FovRadius
 FovCircle.Filled = false
 FovCircle.Visible = false
 
--- Notifications (Bottom Right Position)
+-- Notifications
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
 NotifContainer.Size = UDim2.new(0, 340, 0, 180)
@@ -95,7 +249,6 @@ NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifLayout.Parent = NotifContainer
 
 local notifEnabled = true
-local notifDuration = 3
 
 local function notify(title, msg)
     if not notifEnabled then return end
@@ -140,15 +293,13 @@ local function notify(title, msg)
     mLabel.Text = msg
     mLabel.Parent = card
 
-    -- Slide in + Fade in
     local tweenInfoIn = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     TweenService:Create(card, tweenInfoIn, {BackgroundTransparency = 0.15, Position = UDim2.new(0, 0, 0, 0)}):Play()
     TweenService:Create(bar, tweenInfoIn, {BackgroundTransparency = 0}):Play()
     TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
     TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
 
-    -- Fade out + Slide out
-    task.delay(notifDuration, function()
+    task.delay(3, function()
         if card and card.Parent then
             local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
             TweenService:Create(card, tweenInfoOut, {BackgroundTransparency = 1, Position = UDim2.new(1, 50, 0, 0)}):Play()
@@ -160,6 +311,79 @@ local function notify(title, msg)
             lastTween.Completed:Connect(function()
                 card:Destroy()
             end)
+        end
+    end)
+end
+
+-- Tooltip Box
+local TooltipFrame = Instance.new("Frame")
+TooltipFrame.Name = "TooltipFrame"
+TooltipFrame.Size = UDim2.new(0, 240, 0, 45)
+TooltipFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+TooltipFrame.BorderSizePixel = 0
+TooltipFrame.Visible = false
+TooltipFrame.ZIndex = 100
+TooltipFrame.Parent = ScreenGui
+createCorner(TooltipFrame, 8)
+
+local TooltipText = Instance.new("TextLabel")
+TooltipText.Size = UDim2.new(1, -16, 1, -10)
+TooltipText.Position = UDim2.new(0, 8, 0, 5)
+TooltipText.BackgroundTransparency = 1
+TooltipText.TextColor3 = C_TEXT
+TooltipText.Font = Enum.Font.GothamMedium
+TooltipText.TextSize = 11
+TooltipText.TextWrapped = true
+TooltipText.ZIndex = 101
+TooltipText.Parent = TooltipFrame
+
+local currentTooltipTween = nil
+local function showTooltip(desc)
+    if not desc or desc == "" then return end
+    TooltipText.Text = desc
+    TooltipFrame.Visible = true
+    TooltipFrame.BackgroundTransparency = 1
+    TooltipText.TextTransparency = 1
+    
+    if currentTooltipTween then currentTooltipTween:Cancel() end
+    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1})
+    TweenService:Create(TooltipText, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
+    currentTooltipTween:Play()
+end
+
+local function hideTooltip()
+    if currentTooltipTween then currentTooltipTween:Cancel() end
+    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.15), {BackgroundTransparency = 1})
+    TweenService:Create(TooltipText, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+    currentTooltipTween.Completed:Connect(function()
+        if TooltipFrame.BackgroundTransparency >= 0.9 then
+            TooltipFrame.Visible = false
+        end
+    end)
+end
+
+UserInputService.InputChanged:Connect(function(input)
+    if TooltipFrame.Visible and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        TooltipFrame.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
+    end
+end)
+
+local function bindTooltip(guiObject, tooltipKey)
+    local isPressing = false
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isPressing = true
+            task.delay(0.3, function()
+                if isPressing then
+                    showTooltip(tr(tooltipKey))
+                end
+            end)
+        end
+    end)
+    guiObject.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isPressing = false
+            hideTooltip()
         end
     end)
 end
@@ -189,7 +413,6 @@ SideHeader.Size = UDim2.new(1, 0, 0, 60)
 SideHeader.BackgroundTransparency = 1
 SideHeader.Parent = Sidebar
 
--- Указанная текстура логотипа рядом с VexHub
 local LogoIcon = Instance.new("ImageLabel")
 LogoIcon.Size = UDim2.new(0, 24, 0, 24)
 LogoIcon.Position = UDim2.new(0, 14, 0, 18)
@@ -230,53 +453,7 @@ TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabListLayout.Padding = UDim.new(0, 4)
 TabListLayout.Parent = TabListFrame
 
--- Sidebar Profile
-local ProfileCard = Instance.new("Frame")
-ProfileCard.Size = UDim2.new(1, -24, 0, 50)
-ProfileCard.Position = UDim2.new(0, 12, 1, -60)
-ProfileCard.BackgroundColor3 = C_CARD
-ProfileCard.BackgroundTransparency = 0.1
-ProfileCard.Parent = Sidebar
-createCorner(ProfileCard, 8)
-
-local ProfileAvatar = Instance.new("ImageLabel")
-ProfileAvatar.Size = UDim2.new(0, 34, 0, 34)
-ProfileAvatar.Position = UDim2.new(0, 8, 0, 8)
-ProfileAvatar.BackgroundTransparency = 1
-ProfileAvatar.Parent = ProfileCard
-createCorner(ProfileAvatar, 17)
-
-task.spawn(function()
-    local content, isReady = Players:GetUserThumbnailAsync(
-        LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100
-    )
-    if isReady then ProfileAvatar.Image = content end
-end)
-
-local ProfileName = Instance.new("TextLabel")
-ProfileName.Size = UDim2.new(1, -52, 0, 16)
-ProfileName.Position = UDim2.new(0, 48, 0, 9)
-ProfileName.BackgroundTransparency = 1
-ProfileName.Text = LocalPlayer.DisplayName
-ProfileName.TextColor3 = C_TEXT
-ProfileName.Font = Enum.Font.GothamBold
-ProfileName.TextSize = 12
-ProfileName.TextXAlignment = Enum.TextXAlignment.Left
-ProfileName.TextTruncate = Enum.TextTruncate.AtEnd
-ProfileName.Parent = ProfileCard
-
-local ProfileSub = Instance.new("TextLabel")
-ProfileSub.Size = UDim2.new(1, -52, 0, 14)
-ProfileSub.Position = UDim2.new(0, 48, 0, 25)
-ProfileSub.BackgroundTransparency = 1
-ProfileSub.Text = "Prison Life"
-ProfileSub.TextColor3 = C_MUTED
-ProfileSub.Font = Enum.Font.GothamMedium
-ProfileSub.TextSize = 10
-ProfileSub.TextXAlignment = Enum.TextXAlignment.Left
-ProfileSub.Parent = ProfileCard
-
--- Content
+-- Content Frame
 local Content = Instance.new("Frame")
 Content.Name = "Content"
 Content.Size = UDim2.new(1, -220, 1, 0)
@@ -308,73 +485,7 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- Search Bar
-local SearchBar = Instance.new("Frame")
-SearchBar.Size = UDim2.new(0, 180, 0, 32)
-SearchBar.Position = UDim2.new(1, -195, 0, 14)
-SearchBar.BackgroundColor3 = C_CARD
-SearchBar.BackgroundTransparency = 0.1
-SearchBar.Parent = ContentTop
-createCorner(SearchBar, 8)
-
-local SearchIcon = Instance.new("TextLabel")
-SearchIcon.Size = UDim2.new(0, 24, 1, 0)
-SearchIcon.Position = UDim2.new(0, 6, 0, 0)
-SearchIcon.BackgroundTransparency = 1
-SearchIcon.Text = "🔍"
-SearchIcon.TextSize = 12
-SearchIcon.Parent = SearchBar
-
-local SearchInput = Instance.new("TextBox")
-SearchInput.Size = UDim2.new(1, -34, 1, 0)
-SearchInput.Position = UDim2.new(0, 30, 0, 0)
-SearchInput.BackgroundTransparency = 1
-SearchInput.PlaceholderText = "Search..."
-SearchInput.PlaceholderColor3 = C_FAINT
-SearchInput.Text = ""
-SearchInput.TextColor3 = C_TEXT
-SearchInput.Font = Enum.Font.GothamMedium
-SearchInput.TextSize = 12
-SearchInput.TextXAlignment = Enum.TextXAlignment.Left
-SearchInput.Parent = SearchBar
-
--- Footer
-local Footer = Instance.new("Frame")
-Footer.Name = "Footer"
-Footer.Size = UDim2.new(1, -30, 0, 30)
-Footer.Position = UDim2.new(0, 15, 1, -35)
-Footer.BackgroundTransparency = 1
-Footer.Parent = Content
-
-local FooterDot = Instance.new("Frame")
-FooterDot.Size = UDim2.new(0, 8, 0, 8)
-FooterDot.Position = UDim2.new(0, 0, 0.5, -4)
-FooterDot.BackgroundColor3 = C_GREEN
-FooterDot.Parent = Footer
-createCorner(FooterDot, 4)
-
-local FooterText = Instance.new("TextLabel")
-FooterText.Size = UDim2.new(0, 300, 1, 0)
-FooterText.Position = UDim2.new(0, 14, 0, 0)
-FooterText.BackgroundTransparency = 1
-FooterText.Text = "Your executor is supported and fully compatible."
-FooterText.TextColor3 = C_MUTED
-FooterText.Font = Enum.Font.GothamMedium
-FooterText.TextSize = 11
-FooterText.TextXAlignment = Enum.TextXAlignment.Left
-FooterText.Parent = Footer
-
-local FooterRight = Instance.new("TextLabel")
-FooterRight.Size = UDim2.new(0, 200, 1, 0)
-FooterRight.Position = UDim2.new(1, -200, 0, 0)
-FooterRight.BackgroundTransparency = 1
-FooterRight.Text = "Tap the pill or RShift"
-FooterRight.TextColor3 = C_FAINT
-FooterRight.Font = Enum.Font.GothamMedium
-FooterRight.TextSize = 11
-FooterRight.TextXAlignment = Enum.TextXAlignment.Right
-FooterRight.Parent = Footer
-
+-- Helper UI Builders
 local function clearContent()
     for _, child in ipairs(Content:GetChildren()) do
         if child.Name ~= "ContentTop" and child.Name ~= "Footer" then
@@ -386,7 +497,7 @@ end
 local function makeScrollingFrame()
     local sf = Instance.new("ScrollingFrame")
     sf.Name = "TabScroll"
-    sf.Size = UDim2.new(1, -30, 1, -100)
+    sf.Size = UDim2.new(1, -30, 1, -70)
     sf.Position = UDim2.new(0, 15, 0, 65)
     sf.BackgroundTransparency = 1
     sf.BorderSizePixel = 0
@@ -406,8 +517,7 @@ local function makeScrollingFrame()
     return sf
 end
 
--- Controls Builder
-local function createToggle(parent, title, defaultState, callback)
+local function createToggle(parent, titleKey, defaultState, callback)
     local state = defaultState or false
 
     local row = Instance.new("TextButton")
@@ -423,7 +533,7 @@ local function createToggle(parent, title, defaultState, callback)
     lbl.Size = UDim2.new(1, -60, 1, 0)
     lbl.Position = UDim2.new(0, 14, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = title
+    lbl.Text = tr(titleKey)
     lbl.TextColor3 = C_TEXT
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
@@ -444,55 +554,19 @@ local function createToggle(parent, title, defaultState, callback)
     knob.Parent = pill
     createCorner(knob, 9)
 
-    row.MouseEnter:Connect(function()
-        TweenService:Create(row, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
-    end)
-    row.MouseLeave:Connect(function()
-        TweenService:Create(row, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
-    end)
+    bindTooltip(row, "TT_" .. titleKey)
 
     row.MouseButton1Click:Connect(function()
         state = not state
         TweenService:Create(pill, TweenInfo.new(0.16), {BackgroundColor3 = state and C_TOGGLE_ON or C_TOGGLE_OFF}):Play()
         TweenService:Create(knob, TweenInfo.new(0.16), {Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)}):Play()
-        notify(title, state and "Включено" or "Выключено")
         pcall(callback, state)
     end)
 
     return row
 end
 
-local function createButton(parent, title, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 44)
-    btn.BackgroundColor3 = C_CARD
-    btn.BackgroundTransparency = 0.1
-    btn.AutoButtonColor = false
-    btn.Text = ""
-    btn.Parent = parent
-    createCorner(btn, 10)
-
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = title
-    lbl.TextColor3 = C_TEXT
-    lbl.Font = Enum.Font.GothamMedium
-    lbl.TextSize = 13
-    lbl.Parent = btn
-
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
-    end)
-
-    btn.MouseButton1Click:Connect(function() pcall(callback) end)
-    return btn
-end
-
-local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
+local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callback)
     local value = defaultVal or minVal
 
     local card = Instance.new("Frame")
@@ -506,7 +580,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     lbl.Size = UDim2.new(0.7, 0, 0, 20)
     lbl.Position = UDim2.new(0, 14, 0, 8)
     lbl.BackgroundTransparency = 1
-    lbl.Text = title
+    lbl.Text = tr(titleKey)
     lbl.TextColor3 = C_TEXT
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
@@ -536,6 +610,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     fill.BackgroundColor3 = C_ACCENT
     fill.Parent = track
     createCorner(fill, 3)
+
+    bindTooltip(card, "TT_" .. titleKey)
 
     local dragging = false
     local function updateFromInput(input)
@@ -568,6 +644,31 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     return card
 end
 
+local function createButton(parent, titleKey, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 44)
+    btn.BackgroundColor3 = C_CARD
+    btn.BackgroundTransparency = 0.1
+    btn.AutoButtonColor = false
+    btn.Text = ""
+    btn.Parent = parent
+    createCorner(btn, 10)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = tr(titleKey)
+    lbl.TextColor3 = C_TEXT
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextSize = 13
+    lbl.Parent = btn
+
+    bindTooltip(btn, "TT_" .. titleKey)
+
+    btn.MouseButton1Click:Connect(function() pcall(callback) end)
+    return btn
+end
+
 -- Tab Management
 local currentTab = "Home"
 local tabs = {}
@@ -580,7 +681,7 @@ local function selectTab(name)
             data.lbl.TextColor3 = C_ACCENT
             data.iconImg.ImageColor3 = C_ACCENT
             TabIconHeader.Image = data.iconAsset
-            TabTitleHeader.Text = data.label
+            TabTitleHeader.Text = tr(data.labelKey)
             clearContent()
             data.build()
         else
@@ -591,7 +692,7 @@ local function selectTab(name)
     end
 end
 
-local function registerTab(name, iconAsset, label, buildFunc, order)
+local function registerTab(name, iconAsset, labelKey, buildFunc, order)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = C_SIDEBAR
@@ -614,339 +715,187 @@ local function registerTab(name, iconAsset, label, buildFunc, order)
     lbl.Size = UDim2.new(1, -40, 1, 0)
     lbl.Position = UDim2.new(0, 38, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = label
+    lbl.Text = tr(labelKey)
     lbl.TextColor3 = C_MUTED
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = btn
 
-    btn.MouseEnter:Connect(function()
-        if currentTab ~= name then TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play() end
-    end)
-    btn.MouseLeave:Connect(function()
-        if currentTab ~= name then TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play() end
-    end)
-
     btn.MouseButton1Click:Connect(function() selectTab(name) end)
 
     tabs[name] = {
-        btn = btn, iconAsset = iconAsset, label = label, lbl = lbl, iconImg = iconImg, build = buildFunc
+        btn = btn, iconAsset = iconAsset, labelKey = labelKey, lbl = lbl, iconImg = iconImg, build = buildFunc
     }
 end
-
-local startTime = tick()
 
 -- TAB BUILDERS
 local function buildHomeTab()
     local sf = makeScrollingFrame()
 
-    -- Card 1: WELCOME
     local card1 = Instance.new("Frame")
-    card1.Size = UDim2.new(1, 0, 0, 130)
+    card1.Size = UDim2.new(1, 0, 0, 110)
     card1.BackgroundColor3 = C_CARD
     card1.BackgroundTransparency = 0.1
     card1.Parent = sf
     createCorner(card1, 10)
 
-    local wbFaint = Instance.new("TextLabel")
-    wbFaint.Size = UDim2.new(0, 200, 0, 14)
-    wbFaint.Position = UDim2.new(0, 16, 0, 14)
-    wbFaint.BackgroundTransparency = 1
-    wbFaint.Text = "WELCOME BACK"
-    wbFaint.TextColor3 = C_FAINT
-    wbFaint.Font = Enum.Font.GothamBold
-    wbFaint.TextSize = 10
-    wbFaint.TextXAlignment = Enum.TextXAlignment.Left
-    wbFaint.Parent = card1
-
     local wbName = Instance.new("TextLabel")
-    wbName.Size = UDim2.new(1, -140, 0, 30)
-    wbName.Position = UDim2.new(0, 16, 0, 30)
+    wbName.Size = UDim2.new(1, -20, 0, 30)
+    wbName.Position = UDim2.new(0, 16, 0, 18)
     wbName.BackgroundTransparency = 1
-    wbName.Text = LocalPlayer.DisplayName
+    wbName.Text = "VexHub - Prison Life"
     wbName.TextColor3 = C_TEXT
     wbName.Font = Enum.Font.GothamBold
-    wbName.TextSize = 24
+    wbName.TextSize = 20
     wbName.TextXAlignment = Enum.TextXAlignment.Left
-    wbName.TextTruncate = Enum.TextTruncate.AtEnd
     wbName.Parent = card1
 
     local wbUser = Instance.new("TextLabel")
-    wbUser.Size = UDim2.new(1, -140, 0, 16)
-    wbUser.Position = UDim2.new(0, 16, 0, 62)
+    wbUser.Size = UDim2.new(1, -20, 0, 20)
+    wbUser.Position = UDim2.new(0, 16, 0, 52)
     wbUser.BackgroundTransparency = 1
-    wbUser.Text = "@" .. LocalPlayer.Name
+    wbUser.Text = "Logged in as: " .. LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")"
     wbUser.TextColor3 = C_MUTED
     wbUser.Font = Enum.Font.GothamMedium
     wbUser.TextSize = 12
     wbUser.TextXAlignment = Enum.TextXAlignment.Left
     wbUser.Parent = card1
 
-    local bigAvatar = Instance.new("ImageLabel")
-    bigAvatar.Size = UDim2.new(0, 100, 0, 100)
-    bigAvatar.Position = UDim2.new(1, -115, 0.5, -50)
-    bigAvatar.BackgroundTransparency = 1
-    bigAvatar.Parent = card1
-    createCorner(bigAvatar, 50)
-
-    task.spawn(function()
-        local content, isReady = Players:GetUserThumbnailAsync(
-            LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150
-        )
-        if isReady then bigAvatar.Image = content end
+    -- Server Controls
+    createButton(sf, "Rejoin", function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end)
 
-    -- Card 2: FPS/PING
-    local card2 = Instance.new("Frame")
-    card2.Size = UDim2.new(1, 0, 0, 130)
-    card2.BackgroundColor3 = C_CARD
-    card2.BackgroundTransparency = 0.1
-    card2.Parent = sf
-    createCorner(card2, 10)
-
-    local fpsFaint = Instance.new("TextLabel")
-    fpsFaint.Size = UDim2.new(0.45, 0, 0, 14)
-    fpsFaint.Position = UDim2.new(0, 16, 0, 16)
-    fpsFaint.BackgroundTransparency = 1
-    fpsFaint.Text = "FPS"
-    fpsFaint.TextColor3 = C_FAINT
-    fpsFaint.Font = Enum.Font.GothamBold
-    fpsFaint.TextSize = 10
-    fpsFaint.TextXAlignment = Enum.TextXAlignment.Left
-    fpsFaint.Parent = card2
-
-    local fpsVal = Instance.new("TextLabel")
-    fpsVal.Size = UDim2.new(0.45, 0, 0, 30)
-    fpsVal.Position = UDim2.new(0, 16, 0, 32)
-    fpsVal.BackgroundTransparency = 1
-    fpsVal.Text = "60"
-    fpsVal.TextColor3 = C_GREEN
-    fpsVal.Font = Enum.Font.GothamBold
-    fpsVal.TextSize = 22
-    fpsVal.TextXAlignment = Enum.TextXAlignment.Left
-    fpsVal.Parent = card2
-
-    local pingFaint = Instance.new("TextLabel")
-    pingFaint.Size = UDim2.new(0.45, 0, 0, 14)
-    pingFaint.Position = UDim2.new(0.5, 0, 0, 16)
-    pingFaint.BackgroundTransparency = 1
-    pingFaint.Text = "PING"
-    pingFaint.TextColor3 = C_FAINT
-    pingFaint.Font = Enum.Font.GothamBold
-    pingFaint.TextSize = 10
-    pingFaint.TextXAlignment = Enum.TextXAlignment.Left
-    pingFaint.Parent = card2
-
-    local pingVal = Instance.new("TextLabel")
-    pingVal.Size = UDim2.new(0.45, 0, 0, 30)
-    pingVal.Position = UDim2.new(0.5, 0, 0, 32)
-    pingVal.BackgroundTransparency = 1
-    pingVal.Text = "45 ms"
-    pingVal.TextColor3 = C_GREEN
-    pingVal.Font = Enum.Font.GothamBold
-    pingVal.TextSize = 22
-    pingVal.TextXAlignment = Enum.TextXAlignment.Left
-    pingVal.Parent = card2
-
-    local plrsFaint = Instance.new("TextLabel")
-    plrsFaint.Size = UDim2.new(0.45, 0, 0, 14)
-    plrsFaint.Position = UDim2.new(0, 16, 0, 85)
-    plrsFaint.BackgroundTransparency = 1
-    plrsFaint.Text = "0/0 PLAYERS"
-    plrsFaint.TextColor3 = C_FAINT
-    plrsFaint.Font = Enum.Font.GothamBold
-    plrsFaint.TextSize = 10
-    plrsFaint.TextXAlignment = Enum.TextXAlignment.Left
-    plrsFaint.Parent = card2
-
-    local sessFaint = Instance.new("TextLabel")
-    sessFaint.Size = UDim2.new(0.45, 0, 0, 14)
-    sessFaint.Position = UDim2.new(0.5, 0, 0, 85)
-    sessFaint.BackgroundTransparency = 1
-    sessFaint.Text = "0s SESSION"
-    sessFaint.TextColor3 = C_FAINT
-    sessFaint.Font = Enum.Font.GothamBold
-    sessFaint.TextSize = 10
-    sessFaint.TextXAlignment = Enum.TextXAlignment.Left
-    sessFaint.Parent = card2
-
-    local frameCount = 0
-    local lastFpsUpdate = tick()
-    local fpsConnection
-
-    fpsConnection = RunService.RenderStepped:Connect(function()
-        frameCount = frameCount + 1
-        local now = tick()
-        if now - lastFpsUpdate >= 1 then
-            if card2 and card2.Parent then
-                fpsVal.Text = tostring(frameCount)
-                local ping = 0
-                pcall(function() ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end)
-                pingVal.Text = tostring(ping) .. " ms"
-                plrsFaint.Text = string.format("%d/%d PLAYERS", #Players:GetPlayers(), Players.MaxPlayers)
-                sessFaint.Text = string.format("%ds SESSION", math.floor(tick() - startTime))
-            else
-                fpsConnection:Disconnect()
+    createButton(sf, "ServerHop", function()
+        notify("Server Hop", "Searching for available servers...")
+        task.spawn(function()
+            local servers = {}
+            local req = request or http_request or (syn and syn.request)
+            if req then
+                local res = req({Url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"})
+                local data = HttpService:JSONDecode(res.Body)
+                if data and data.data then
+                    for _, v in ipairs(data.data) do
+                        if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                            table.insert(servers, v.id)
+                        end
+                    end
+                end
             end
-            frameCount = 0
-            lastFpsUpdate = now
-        end
-    end)
-
-    -- Card 3: Game Info
-    local card3 = Instance.new("Frame")
-    card3.Size = UDim2.new(1, 0, 0, 130)
-    card3.BackgroundColor3 = C_CARD
-    card3.BackgroundTransparency = 0.1
-    card3.Parent = sf
-    createCorner(card3, 10)
-
-    local gameIcon = Instance.new("ImageLabel")
-    gameIcon.Size = UDim2.new(0, 50, 0, 50)
-    gameIcon.Position = UDim2.new(0, 16, 0, 16)
-    gameIcon.BackgroundColor3 = C_SIDEBAR
-    gameIcon.Image = "rbxassetid://122728613872558"
-    gameIcon.Parent = card3
-    createCorner(gameIcon, 8)
-
-    local gameTitle = Instance.new("TextLabel")
-    gameTitle.Size = UDim2.new(1, -90, 0, 20)
-    gameTitle.Position = UDim2.new(0, 76, 0, 18)
-    gameTitle.BackgroundTransparency = 1
-    gameTitle.Text = "Тюремная жизнь"
-    gameTitle.TextColor3 = C_TEXT
-    gameTitle.Font = Enum.Font.GothamBold
-    gameTitle.TextSize = 15
-    gameTitle.TextXAlignment = Enum.TextXAlignment.Left
-    gameTitle.Parent = card3
-
-    local gameSub = Instance.new("TextLabel")
-    gameSub.Size = UDim2.new(1, -90, 0, 16)
-    gameSub.Position = UDim2.new(0, 76, 0, 40)
-    gameSub.BackgroundTransparency = 1
-    gameSub.Text = string.format("by DevScripts · %d/%d players", #Players:GetPlayers(), Players.MaxPlayers)
-    gameSub.TextColor3 = C_MUTED
-    gameSub.Font = Enum.Font.GothamMedium
-    gameSub.TextSize = 11
-    gameSub.TextXAlignment = Enum.TextXAlignment.Left
-    gameSub.Parent = card3
-
-    local btnRow = Instance.new("Frame")
-    btnRow.Size = UDim2.new(1, -32, 0, 34)
-    btnRow.Position = UDim2.new(0, 16, 0, 80)
-    btnRow.BackgroundTransparency = 1
-    btnRow.Parent = card3
-
-    local btnRowLayout = Instance.new("UIListLayout")
-    btnRowLayout.FillDirection = Enum.FillDirection.Horizontal
-    btnRowLayout.Padding = UDim.new(0, 8)
-    btnRowLayout.Parent = btnRow
-
-    local function makeRowBtn(title, callback)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0.25, -6, 1, 0)
-        btn.BackgroundColor3 = C_SIDEBAR
-        btn.BackgroundTransparency = 0.1
-        btn.AutoButtonColor = false
-        btn.Text = title
-        btn.TextColor3 = C_TEXT
-        btn.Font = Enum.Font.GothamMedium
-        btn.TextSize = 11
-        btn.Parent = btnRow
-        createCorner(btn, 6)
-
-        btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+            if #servers > 0 then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+            else
+                notify("Server Hop", "No other servers found!")
+            end
         end)
-        btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play()
-        end)
-
-        btn.MouseButton1Click:Connect(function() pcall(callback) end)
-    end
-
-    makeRowBtn("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
-    makeRowBtn("Hop", function() notify("Server Hop", "Searching for another server...") end)
-    makeRowBtn("Lowest", function() notify("Server Hop", "Searching for lowest populated server...") end)
-    makeRowBtn("Job ID", function()
-        setclipboard(game.JobId)
-        notify("Clipboard", "Job ID copied to clipboard")
     end)
 end
 
 local function buildMainTab()
     local sf = makeScrollingFrame()
 
-    createToggle(sf, "Aimbot", FeatureState.AimEnabled, function(v)
+    createToggle(sf, "AimEnabled", FeatureState.AimEnabled, function(v)
         FeatureState.AimEnabled = v
         FovCircle.Visible = v
     end)
 
-    createToggle(sf, "Wall Check (No Shoot Thru Walls)", FeatureState.WallCheck, function(v)
-        FeatureState.WallCheck = v
-    end)
+    createToggle(sf, "TargetCriminals", FeatureState.TargetCriminals, function(v) FeatureState.TargetCriminals = v end)
+    createToggle(sf, "TargetGuards", FeatureState.TargetGuards, function(v) FeatureState.TargetGuards = v end)
+    createToggle(sf, "TargetInmates", FeatureState.TargetInmates, function(v) FeatureState.TargetInmates = v end)
+    createToggle(sf, "WallCheck", FeatureState.WallCheck, function(v) FeatureState.WallCheck = v end)
 
-    createToggle(sf, "Team Check (No Team Kill)", FeatureState.TeamCheck, function(v)
-        FeatureState.TeamCheck = v
-    end)
-
-    createSlider(sf, "FOV Radius", 30, 300, FeatureState.FovRadius, function(v)
+    createSlider(sf, "FovRadius", 30, 400, FeatureState.FovRadius, function(v)
         FeatureState.FovRadius = v
         FovCircle.Radius = v
     end)
 
-    createToggle(sf, "Inf Stamina", FeatureState.InfStamina, function(v)
-        FeatureState.InfStamina = v
-    end)
+    createToggle(sf, "InfStamina", FeatureState.InfStamina, function(v) FeatureState.InfStamina = v end)
+    
+    createToggle(sf, "SpeedHack", FeatureState.SpeedHack, function(v) FeatureState.SpeedHack = v end)
+    createSlider(sf, "SpeedHackVal", 16, 150, FeatureState.SpeedHackValue, function(v) FeatureState.SpeedHackValue = v end)
 
-    createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
-        FeatureState.SpeedBoost = v
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = v and 25 or 16
-        end
-    end)
-
-    createToggle(sf, "Fast Punch", FeatureState.FastPunch, function(v)
-        FeatureState.FastPunch = v
-    end)
-
-    createToggle(sf, "Noclip", FeatureState.Noclip, function(v)
-        FeatureState.Noclip = v
-    end)
+    createToggle(sf, "FastPunch", FeatureState.FastPunch, function(v) FeatureState.FastPunch = v end)
+    createToggle(sf, "Noclip", FeatureState.Noclip, function(v) FeatureState.Noclip = v end)
 end
 
-local function buildPlayerTab()
+local function buildVisualsTab()
     local sf = makeScrollingFrame()
 
-    -- Переименовано просто в Esp
-    createToggle(sf, "Esp", FeatureState.EspEnabled, function(v)
-        FeatureState.EspEnabled = v
-    end)
-
-    createToggle(sf, "God Mode", FeatureState.GodMode, function(v)
-        FeatureState.GodMode = v
-    end)
-
-    createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
-        FeatureState.AntiAFK = v
-    end)
-
-    createButton(sf, "Reset Character", function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.Health = 0
-        end
-    end)
+    createToggle(sf, "EspEnabled", FeatureState.EspEnabled, function(v) FeatureState.EspEnabled = v end)
+    createToggle(sf, "Fullbright", FeatureState.Fullbright, function(v) FeatureState.Fullbright = v end)
 end
 
 local function buildSettingsTab()
     local sf = makeScrollingFrame()
 
     createToggle(sf, "Notifications", notifEnabled, function(v) notifEnabled = v end)
+    createToggle(sf, "AntiAFK", FeatureState.AntiAFK, function(v) FeatureState.AntiAFK = v end)
 
-    createSlider(sf, "Notif Duration", 1, 10, notifDuration, function(v) notifDuration = v end)
+    -- Language Switcher
+    local langCard = Instance.new("Frame")
+    langCard.Size = UDim2.new(1, 0, 0, 56)
+    langCard.BackgroundColor3 = C_CARD
+    langCard.BackgroundTransparency = 0.1
+    langCard.Parent = sf
+    createCorner(langCard, 10)
 
-    createButton(sf, "Unload UI", function()
+    local langLbl = Instance.new("TextLabel")
+    langLbl.Size = UDim2.new(0.4, 0, 1, 0)
+    langLbl.Position = UDim2.new(0, 14, 0, 0)
+    langLbl.BackgroundTransparency = 1
+    langLbl.Text = tr("Language")
+    langLbl.TextColor3 = C_TEXT
+    langLbl.Font = Enum.Font.GothamMedium
+    langLbl.TextSize = 13
+    langLbl.TextXAlignment = Enum.TextXAlignment.Left
+    langLbl.Parent = langCard
+
+    local function makeLangBtn(text, langCode, posX)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 50, 0, 28)
+        btn.Position = UDim2.new(1, posX, 0.5, -14)
+        btn.BackgroundColor3 = (CurrentLang == langCode) and C_ACCENT or C_SIDEBAR
+        btn.Text = text
+        btn.TextColor3 = C_TEXT
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 11
+        btn.Parent = langCard
+        createCorner(btn, 6)
+
+        btn.MouseButton1Click:Connect(function()
+            CurrentLang = langCode
+            selectTab(currentTab)
+            for name, data in pairs(tabs) do
+                data.lbl.Text = tr(data.labelKey)
+            end
+        end)
+    end
+
+    makeLangBtn("RU", "RU", -170)
+    makeLangBtn("EN", "EN", -110)
+    makeLangBtn("AR", "AR", -50)
+
+    -- Config System
+    createButton(sf, "SaveConfig", function()
+        if writefile then
+            writefile("VexHub_Config.json", HttpService:JSONEncode(FeatureState))
+            notify("Config", "Configuration saved successfully!")
+        end
+    end)
+
+    createButton(sf, "LoadConfig", function()
+        if readfile and isfile and isfile("VexHub_Config.json") then
+            local data = HttpService:JSONDecode(readfile("VexHub_Config.json"))
+            if data then
+                for k, v in pairs(data) do FeatureState[k] = v end
+                selectTab(currentTab)
+                notify("Config", "Configuration loaded successfully!")
+            end
+        end
+    end)
+
+    createButton(sf, "UnloadUI", function()
         getgenv().VexHub_Loaded = false
         FovCircle:Remove()
         ScreenGui:Destroy()
@@ -956,10 +905,10 @@ end
 -- Register Tabs
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
-registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
+registerTab("Visuals", "rbxassetid://17412298151", "Visuals", buildVisualsTab, 3)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
 
-selectTab("Home")
+selectTab("Main")
 
 -- Window Dragging
 local dragging, dragStart, startPos
@@ -984,37 +933,8 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Visibility
-local uiVisible = true
-local isAnimating = false
-
-local function setUIVisible(state)
-    if isAnimating then return end
-    isAnimating = true
-    uiVisible = state
-
-    if uiVisible then
-        MainFrame.Visible = true
-        local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 780, 0, 420),
-            BackgroundTransparency = 0.1
-        })
-        tw:Play()
-        tw.Completed:Connect(function() isAnimating = false end)
-    else
-        local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
-            Size = UDim2.new(0, 780, 0, 0),
-            BackgroundTransparency = 1
-        })
-        tw:Play()
-        tw.Completed:Connect(function()
-            if not uiVisible then MainFrame.Visible = false end
-            isAnimating = false
-        end)
-    end
-end
-
 -- Floating Toggle Button
+local uiVisible = true
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
@@ -1029,19 +949,20 @@ FloatingBtn.Parent = ScreenGui
 createCorner(FloatingBtn, 20)
 
 FloatingBtn.MouseButton1Click:Connect(function()
-    setUIVisible(not uiVisible)
+    uiVisible = not uiVisible
+    MainFrame.Visible = uiVisible
 end)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
-        setUIVisible(not uiVisible)
+        uiVisible = not uiVisible
+        MainFrame.Visible = uiVisible
     end
 end)
 
--- Helper: Wall Check Function
+-- Wall Check Logic
 local function isTargetVisible(targetPart)
     if not FeatureState.WallCheck then return true end
-    
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, Camera}
@@ -1057,13 +978,53 @@ local function isTargetVisible(targetPart)
     return true
 end
 
--- Main Execution Loop
+-- Fast Punch Event
+local mainRemotes = ReplicatedStorage:FindFirstChild("meleeEvent")
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and FeatureState.FastPunch and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if mainRemotes then
+            mainRemotes:FireServer(LocalPlayer)
+        end
+    end
+end)
+
+-- Fullbright Store
+local origBrightness = Lighting.Brightness
+local origClockTime = Lighting.ClockTime
+local origGlobalShadows = Lighting.GlobalShadows
+local origFogEnd = Lighting.FogEnd
+
+-- NOCLIP LOOP
+RunService.Stepped:Connect(function()
+    if FeatureState.Noclip and LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- MAIN RENDER LOOP
 RunService.RenderStepped:Connect(function()
-    -- Lock FOV Circle to Center Screen
+    -- FOV Circle
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
-    -- Aimbot Logic
+    -- Speed Hack
+    if FeatureState.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.SpeedHackValue
+    end
+
+    -- Fullbright
+    if FeatureState.Fullbright then
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 100000
+    end
+
+    -- AIMBOT LOGIC
     if FeatureState.AimEnabled then
         local closestPlayer = nil
         local shortestDistance = FeatureState.FovRadius
@@ -1071,15 +1032,19 @@ RunService.RenderStepped:Connect(function()
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                 
-                local isTeammate = FeatureState.TeamCheck and (plr.Team == LocalPlayer.Team)
-                
-                if not isTeammate then
+                local teamName = tostring(plr.Team)
+                local canTarget = false
+
+                if teamName == "Criminals" and FeatureState.TargetCriminals then canTarget = true end
+                if teamName == "Guards" and FeatureState.TargetGuards then canTarget = true end
+                if teamName == "Inmates" and FeatureState.TargetInmates then canTarget = true end
+
+                if canTarget then
                     local head = plr.Character.Head
                     local headPos, onScreen = Camera:WorldToViewportPoint(head.Position)
                     
                     if onScreen then
                         local dist = (Vector2.new(headPos.X, headPos.Y) - centerScreen).Magnitude
-                        
                         if dist < shortestDistance and isTargetVisible(head) then
                             shortestDistance = dist
                             closestPlayer = plr
@@ -1094,7 +1059,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ESP Logic
+    -- ESP LOGIC
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             local highlight = plr.Character:FindFirstChild("VexESP")
@@ -1122,27 +1087,19 @@ RunService.RenderStepped:Connect(function()
             end
         end
     end
-
-    -- Noclip Logic
-    if FeatureState.Noclip and LocalPlayer.Character then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
 end)
 
--- Inf Stamina
-local mt = getrawmetatable(game)
-local oldIndex = mt.__index
-setreadonly(mt, false)
-mt.__index = newcclosure(function(self, idx)
+-- Infinite Stamina Meta Hook
+local rawmt = getrawmetatable(game)
+local oldIndex = rawmt.__index
+setreadonly(rawmt, false)
+
+rawmt.__index = newcclosure(function(self, idx)
     if FeatureState.InfStamina and tostring(idx) == "Stamina" then
         return 100
     end
     return oldIndex(self, idx)
 end)
-setreadonly(mt, true)
+setreadonly(rawmt, true)
 
-notify("VexHub", "Successfully loaded. Press RightShift to toggle")
+notify("VexHub", "Successfully loaded with all requested updates!")
