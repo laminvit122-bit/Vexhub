@@ -154,7 +154,7 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(46, 204, 113) -- Зеленый цвет активного состояния
+local C_TOGGLE_ON  = Color3.fromRGB(46, 204, 113)
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
@@ -267,7 +267,7 @@ local function notify(title, msg)
     end)
 end
 
--- Fixed Tooltip System
+-- Tooltip System
 local TooltipFrame = Instance.new("Frame")
 TooltipFrame.Name = "TooltipFrame"
 TooltipFrame.Size = UDim2.new(0, 240, 0, 45)
@@ -314,7 +314,6 @@ local function bindTooltip(guiObject, tooltipKey)
     end)
 end
 
--- Hide tooltips on clicking or touching anywhere outside
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         hideTooltip()
@@ -546,7 +545,7 @@ local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callba
 
     local fill = Instance.new("Frame")
     fill.Size = UDim2.new((value - minVal) / (maxVal - minVal), 0, 1, 0)
-    fill.BackgroundColor3 = C_ACCENT
+    fill.BackgroundColor3 = C_TOGGLE_ON
     fill.Parent = track
     createCorner(fill, 3)
 
@@ -1008,6 +1007,22 @@ RunService.RenderStepped:Connect(function()
                     highlight.FillTransparency = 0.5
                     highlight.OutlineTransparency = 0
                     highlight.Parent = plr.Character
+
+                    task.spawn(function()
+                        if LocalPlayer and LocalPlayer.UserId then
+                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                            if hum then
+                                local ok, desc = pcall(function()
+                                    return Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
+                                end)
+                                if ok and desc and hum and hum.Parent then
+                                    pcall(function()
+                                        hum:ApplyDescription(desc)
+                                    end)
+                                end
+                            end
+                        end
+                    end)
                 end
 
                 local teamName = tostring(plr.Team)
