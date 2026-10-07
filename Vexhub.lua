@@ -3,7 +3,7 @@
 --]]
 
 if game.PlaceId ~= 155615604 then
-    warn("[VexHub] Этот скрипт предназначен только для игры Prison Life!")
+    warn("[VexHub] This script is only for Prison Life!")
     return
 end
 
@@ -26,56 +26,9 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Translations
-local CurrentLang = "RU"
+-- Default Language set to EN
+local CurrentLang = "EN"
 local Translations = {
-    RU = {
-        Home = "Главная",
-        Main = "Основные",
-        Visuals = "Визуалы",
-        Settings = "Настройки",
-        AimEnabled = "Aimbot",
-        TargetCriminals = "Цель: Преступники",
-        TargetGuards = "Цель: Охрана",
-        TargetInmates = "Цель: Заключенные",
-        WallCheck = "Проверка стен",
-        FovRadius = "Радиус FOV",
-        InfStamina = "Бесконечная выносливость",
-        SpeedHack = "Speed Hack",
-        SpeedHackVal = "Скорость бега",
-        FastPunch = "Быстрый удар",
-        Noclip = "Проход сквозь стены (Noclip)",
-        EspEnabled = "Подсветка игроков (ESP)",
-        Fullbright = "Светлая карта (Fullbright)",
-        AntiAFK = "Анти-АФК",
-        ResetChar = "Сбросить персонажа",
-        Rejoin = "Перезайти",
-        ServerHop = "Сменить сервер",
-        Notifications = "Уведомления",
-        SaveConfig = "Сохранить конфиг",
-        LoadConfig = "Загрузить конфиг",
-        Language = "Язык / Language",
-        UnloadUI = "Выгрузить скрипт",
-        -- Tooltips
-        TT_AimEnabled = "Автоматическое наведение прицела на игроков в зоне FOV.",
-        TT_TargetCriminals = "Разрешить наведение на красную команду.",
-        TT_TargetGuards = "Разрешить наведение на синюю команду.",
-        TT_TargetInmates = "Разрешить наведение на оранжевую команду.",
-        TT_WallCheck = "Не наводиться, если игрок за стеной.",
-        TT_FovRadius = "Размер круга захвата цели для Aimbot.",
-        TT_InfStamina = "Выносливость при беге больше не расходуется.",
-        TT_SpeedHack = "Включает пользовательскую скорость передвижения.",
-        TT_SpeedHackVal = "Устанавливает значение скорости бега персонажа.",
-        TT_FastPunch = "Убирает задержку между ударами кулаками.",
-        TT_Noclip = "Позволяет ходить сквозь стены и объекты.",
-        TT_EspEnabled = "Подсвечивает всех игроков силуэтами их команд.",
-        TT_Fullbright = "Делает карту полностью освещенной без теней и ночи.",
-        TT_AntiAFK = "Предотвращает кик из игры за бездействие.",
-        TT_Rejoin = "Перезаходит на текущий сервер.",
-        TT_ServerHop = "Автоматически находит и подключает к новому серверу.",
-        TT_SaveConfig = "Сохраняет текущие настройки в файл.",
-        TT_LoadConfig = "Загружает ранее сохраненные настройки."
-    },
     EN = {
         Home = "Home",
         Main = "Main",
@@ -122,6 +75,53 @@ local Translations = {
         TT_ServerHop = "Searches for and joins a different active server.",
         TT_SaveConfig = "Saves current feature configuration.",
         TT_LoadConfig = "Loads saved feature settings."
+    },
+    RU = {
+        Home = "Главная",
+        Main = "Основные",
+        Visuals = "Визуалы",
+        Settings = "Настройки",
+        AimEnabled = "Aimbot",
+        TargetCriminals = "Цель: Преступники",
+        TargetGuards = "Цель: Охрана",
+        TargetInmates = "Цель: Заключенные",
+        WallCheck = "Проверка стен",
+        FovRadius = "Радиус FOV",
+        InfStamina = "Бесконечная выносливость",
+        SpeedHack = "Speed Hack",
+        SpeedHackVal = "Скорость бега",
+        FastPunch = "Быстрый удар",
+        Noclip = "Проход сквозь стены (Noclip)",
+        EspEnabled = "Подсветка игроков (ESP)",
+        Fullbright = "Светлая карта (Fullbright)",
+        AntiAFK = "Анти-АФК",
+        ResetChar = "Сбросить персонажа",
+        Rejoin = "Перезайти",
+        ServerHop = "Сменить сервер",
+        Notifications = "Уведомления",
+        SaveConfig = "Сохранить конфиг",
+        LoadConfig = "Загрузить конфиг",
+        Language = "Язык / Language",
+        UnloadUI = "Выгрузить скрипт",
+        -- Tooltips
+        TT_AimEnabled = "Автоматическое наведение прицела на игроков в зоне FOV.",
+        TT_TargetCriminals = "Разрешить наведение на красную команду.",
+        TT_TargetGuards = "Разрешить наведение на синюю команду.",
+        TT_TargetInmates = "Разрешить наведение на оранжевую команду.",
+        TT_WallCheck = "Не наводиться, если игрок за стеной.",
+        TT_FovRadius = "Размер круга захвата цели для Aimbot.",
+        TT_InfStamina = "Выносливость при беге больше не расходуется.",
+        TT_SpeedHack = "Включает пользовательскую скорость передвижения.",
+        TT_SpeedHackVal = "Устанавливает значение скорости бега персонажа.",
+        TT_FastPunch = "Убирает задержку между ударами кулаками.",
+        TT_Noclip = "Позволяет ходить сквозь стены и объекты.",
+        TT_EspEnabled = "Подсвечивает всех игроков силуэтами их команд.",
+        TT_Fullbright = "Делает карту полностью освещенной без теней и ночи.",
+        TT_AntiAFK = "Предотвращает кик из игры за бездействие.",
+        TT_Rejoin = "Перезаходит на текущий сервер.",
+        TT_ServerHop = "Автоматически находит и подключает к новому серверу.",
+        TT_SaveConfig = "Сохраняет текущие настройки в файл.",
+        TT_LoadConfig = "Загружает ранее сохраненные настройки."
     }
 }
 
@@ -154,7 +154,7 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(255, 255, 255)
+local C_TOGGLE_ON  = Color3.fromRGB(46, 204, 113) -- Зеленый цвет активного состояния
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
@@ -267,7 +267,7 @@ local function notify(title, msg)
     end)
 end
 
--- Tooltip Box
+-- Fixed Tooltip System
 local TooltipFrame = Instance.new("Frame")
 TooltipFrame.Name = "TooltipFrame"
 TooltipFrame.Size = UDim2.new(0, 240, 0, 45)
@@ -289,62 +289,35 @@ TooltipText.TextWrapped = true
 TooltipText.ZIndex = 101
 TooltipText.Parent = TooltipFrame
 
-local currentTooltipTween = nil
-
 local function hideTooltip()
-    if currentTooltipTween then currentTooltipTween:Cancel() end
-    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.15), {BackgroundTransparency = 1})
-    TweenService:Create(TooltipText, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
-    currentTooltipTween.Completed:Connect(function()
-        if TooltipFrame.BackgroundTransparency >= 0.9 then
-            TooltipFrame.Visible = false
-        end
-    end)
+    TooltipFrame.Visible = false
+    TooltipText.Text = ""
 end
 
 local function showTooltip(desc)
     if not desc or desc == "" then return end
     TooltipText.Text = desc
     TooltipFrame.Visible = true
-    TooltipFrame.BackgroundTransparency = 1
-    TooltipText.TextTransparency = 1
-    
-    if currentTooltipTween then currentTooltipTween:Cancel() end
-    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1})
-    TweenService:Create(TooltipText, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
-    currentTooltipTween:Play()
 end
 
--- Привязка подсказок с защитой от показа при нажатии мимо/в пустоту
 local function bindTooltip(guiObject, tooltipKey)
-    local isPressing = false
-
     guiObject.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isPressing = true
-            task.delay(0.25, function()
-                -- Показываем подсказку только если нажатие все еще удержано именно на элементе
-                if isPressing then
-                    showTooltip(tr(tooltipKey))
-                end
-            end)
+            showTooltip(tr(tooltipKey))
         end
     end)
 
     guiObject.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isPressing = false
             hideTooltip()
         end
     end)
 end
 
--- Закрывать подсказку при клике в любую пустую область экрана
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
+-- Hide tooltips on clicking or touching anywhere outside
+UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if not gameProcessed then
-            hideTooltip()
-        end
+        hideTooltip()
     end
 end)
 
@@ -733,7 +706,7 @@ local function buildHomeTab()
     end)
 
     createButton(sf, "ServerHop", function()
-        notify("Server Hop", "Поиск доступного сервера...")
+        notify("Server Hop", "Searching for available server...")
         task.spawn(function()
             local servers = {}
             local req = request or http_request or (syn and syn.request)
@@ -751,7 +724,7 @@ local function buildHomeTab()
             if #servers > 0 then
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
             else
-                notify("Server Hop", "Других серверов не найдено.")
+                notify("Server Hop", "No other servers found.")
             end
         end)
     end)
@@ -841,7 +814,7 @@ local function buildSettingsTab()
     createButton(sf, "SaveConfig", function()
         if writefile then
             writefile("VexHub_Config.json", HttpService:JSONEncode(FeatureState))
-            notify("Config", "Настройки сохранены!")
+            notify("Config", "Settings saved successfully!")
         end
     end)
 
@@ -851,7 +824,7 @@ local function buildSettingsTab()
             if data then
                 for k, v in pairs(data) do FeatureState[k] = v end
                 selectTab(currentTab)
-                notify("Config", "Настройки загружены!")
+                notify("Config", "Settings loaded successfully!")
             end
         end
     end)
@@ -869,7 +842,8 @@ registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Visuals", "rbxassetid://17412298151", "Visuals", buildVisualsTab, 3)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
 
-selectTab("Main")
+-- Select HOME tab by default on execution
+selectTab("Home")
 
 -- Window Dragging
 local dragging, dragStart, startPos
@@ -1066,4 +1040,4 @@ rawmt.__index = newcclosure(function(self, idx)
 end)
 setreadonly(rawmt, true)
 
-notify("VexHub", "Скрипт успешно загружен!")
+notify("VexHub", "Script successfully loaded!")
