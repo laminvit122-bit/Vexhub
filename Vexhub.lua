@@ -43,6 +43,7 @@ local FeatureState = {
     AimEnabled = false,
     FovRadius = 100,
     TeamCheck = true,
+    WallCheck = true,
     EspEnabled = false,
     InfStamina = false,
     SpeedBoost = false,
@@ -79,18 +80,18 @@ FovCircle.Radius = FeatureState.FovRadius
 FovCircle.Filled = false
 FovCircle.Visible = false
 
--- Notifications
+-- Notifications (Bottom Right Position)
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
-NotifContainer.Size = UDim2.new(0, 340, 1, -40)
-NotifContainer.Position = UDim2.new(1, -360, 0, 20)
+NotifContainer.Size = UDim2.new(0, 340, 0, 180)
+NotifContainer.Position = UDim2.new(1, -360, 1, -190)
 NotifContainer.BackgroundTransparency = 1
 NotifContainer.Parent = ScreenGui
 
 local NotifLayout = Instance.new("UIListLayout")
 NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
-NotifLayout.Padding = UDim.new(0, 10)
-NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+NotifLayout.Padding = UDim.new(0, 8)
+NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifLayout.Parent = NotifContainer
 
 local notifEnabled = true
@@ -100,9 +101,10 @@ local function notify(title, msg)
     if not notifEnabled then return end
 
     local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, 0, 0, 66)
+    card.Size = UDim2.new(1, 0, 0, 56)
+    card.Position = UDim2.new(1, 100, 0, 0)
     card.BackgroundColor3 = C_CARD
-    card.BackgroundTransparency = 0.1
+    card.BackgroundTransparency = 1
     card.ClipsDescendants = true
     card.Parent = NotifContainer
     createCorner(card, 10)
@@ -110,33 +112,55 @@ local function notify(title, msg)
     local bar = Instance.new("Frame")
     bar.Size = UDim2.new(0, 3, 1, 0)
     bar.BackgroundColor3 = C_ACCENT
+    bar.BackgroundTransparency = 1
     bar.BorderSizePixel = 0
     bar.Parent = card
 
     local tLabel = Instance.new("TextLabel")
-    tLabel.Size = UDim2.new(1, -20, 0, 22)
-    tLabel.Position = UDim2.new(0, 12, 0, 10)
+    tLabel.Size = UDim2.new(1, -20, 0, 20)
+    tLabel.Position = UDim2.new(0, 12, 0, 8)
     tLabel.BackgroundTransparency = 1
     tLabel.Font = Enum.Font.GothamBold
-    tLabel.TextSize = 15
+    tLabel.TextSize = 14
     tLabel.TextColor3 = C_TEXT
+    tLabel.TextTransparency = 1
     tLabel.TextXAlignment = Enum.TextXAlignment.Left
     tLabel.Text = title
     tLabel.Parent = card
 
     local mLabel = Instance.new("TextLabel")
-    mLabel.Size = UDim2.new(1, -20, 0, 20)
-    mLabel.Position = UDim2.new(0, 12, 0, 34)
+    mLabel.Size = UDim2.new(1, -20, 0, 18)
+    mLabel.Position = UDim2.new(0, 12, 0, 28)
     mLabel.BackgroundTransparency = 1
     mLabel.Font = Enum.Font.GothamMedium
-    mLabel.TextSize = 13
+    mLabel.TextSize = 12
     mLabel.TextColor3 = C_MUTED
+    mLabel.TextTransparency = 1
     mLabel.TextXAlignment = Enum.TextXAlignment.Left
     mLabel.Text = msg
     mLabel.Parent = card
 
+    -- Slide in + Fade in
+    local tweenInfoIn = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    TweenService:Create(card, tweenInfoIn, {BackgroundTransparency = 0.15, Position = UDim2.new(0, 0, 0, 0)}):Play()
+    TweenService:Create(bar, tweenInfoIn, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
+    TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
+
+    -- Fade out + Slide out
     task.delay(notifDuration, function()
-        if card and card.Parent then card:Destroy() end
+        if card and card.Parent then
+            local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            TweenService:Create(card, tweenInfoOut, {BackgroundTransparency = 1, Position = UDim2.new(1, 50, 0, 0)}):Play()
+            TweenService:Create(bar, tweenInfoOut, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(tLabel, tweenInfoOut, {TextTransparency = 1}):Play()
+            local lastTween = TweenService:Create(mLabel, tweenInfoOut, {TextTransparency = 1})
+            lastTween:Play()
+            
+            lastTween.Completed:Connect(function()
+                card:Destroy()
+            end)
+        end
     end)
 end
 
@@ -165,14 +189,12 @@ SideHeader.Size = UDim2.new(1, 0, 0, 60)
 SideHeader.BackgroundTransparency = 1
 SideHeader.Parent = Sidebar
 
-local LogoIcon = Instance.new("TextLabel")
+-- Указанная текстура логотипа рядом с VexHub
+local LogoIcon = Instance.new("ImageLabel")
 LogoIcon.Size = UDim2.new(0, 24, 0, 24)
-LogoIcon.Position = UDim2.new(0, 16, 0, 18)
+LogoIcon.Position = UDim2.new(0, 14, 0, 18)
 LogoIcon.BackgroundTransparency = 1
-LogoIcon.Text = "⬢"
-LogoIcon.TextColor3 = C_ACCENT
-LogoIcon.TextSize = 18
-LogoIcon.Font = Enum.Font.GothamBold
+LogoIcon.Image = "rbxassetid://92044950923835"
 LogoIcon.Parent = SideHeader
 
 local LogoTitle = Instance.new("TextLabel")
@@ -433,6 +455,7 @@ local function createToggle(parent, title, defaultState, callback)
         state = not state
         TweenService:Create(pill, TweenInfo.new(0.16), {BackgroundColor3 = state and C_TOGGLE_ON or C_TOGGLE_OFF}):Play()
         TweenService:Create(knob, TweenInfo.new(0.16), {Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)}):Play()
+        notify(title, state and "Включено" or "Выключено")
         pcall(callback, state)
     end)
 
@@ -860,6 +883,10 @@ local function buildMainTab()
         FovCircle.Visible = v
     end)
 
+    createToggle(sf, "Wall Check (No Shoot Thru Walls)", FeatureState.WallCheck, function(v)
+        FeatureState.WallCheck = v
+    end)
+
     createToggle(sf, "Team Check (No Team Kill)", FeatureState.TeamCheck, function(v)
         FeatureState.TeamCheck = v
     end)
@@ -892,7 +919,8 @@ end
 local function buildPlayerTab()
     local sf = makeScrollingFrame()
 
-    createToggle(sf, "ESP (Team Colors)", FeatureState.EspEnabled, function(v)
+    -- Переименовано просто в Esp
+    createToggle(sf, "Esp", FeatureState.EspEnabled, function(v)
         FeatureState.EspEnabled = v
     end)
 
@@ -1010,6 +1038,25 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
+-- Helper: Wall Check Function
+local function isTargetVisible(targetPart)
+    if not FeatureState.WallCheck then return true end
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, Camera}
+    raycastParams.IgnoreWater = true
+
+    local origin = Camera.CFrame.Position
+    local direction = (targetPart.Position - origin)
+    local result = Workspace:Raycast(origin, direction, raycastParams)
+
+    if result then
+        return result.Instance:IsDescendantOf(targetPart.Parent)
+    end
+    return true
+end
+
 -- Main Execution Loop
 RunService.RenderStepped:Connect(function()
     -- Lock FOV Circle to Center Screen
@@ -1022,17 +1069,18 @@ RunService.RenderStepped:Connect(function()
         local shortestDistance = FeatureState.FovRadius
 
         for _, plr in ipairs(Players:GetPlayers()) do
-            -- Ignore Self
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                 
-                -- Team Check (Skip Team Mates)
                 local isTeammate = FeatureState.TeamCheck and (plr.Team == LocalPlayer.Team)
                 
                 if not isTeammate then
-                    local headPos, onScreen = Camera:WorldToViewportPoint(plr.Character.Head.Position)
+                    local head = plr.Character.Head
+                    local headPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    
                     if onScreen then
                         local dist = (Vector2.new(headPos.X, headPos.Y) - centerScreen).Magnitude
-                        if dist < shortestDistance then
+                        
+                        if dist < shortestDistance and isTargetVisible(head) then
                             shortestDistance = dist
                             closestPlayer = plr
                         end
