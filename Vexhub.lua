@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Ultimate Update)
+    VexHub - Prison Life Edition (Full Edition)
 --]]
 
 if game.PlaceId ~= 155615604 then
