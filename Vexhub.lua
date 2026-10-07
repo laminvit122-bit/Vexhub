@@ -1,9 +1,9 @@
 --[[
-    VexHub - Prison Life Edition
+    VexHub - Prison Life Edition (Fixed & Updated)
 --]]
 
 if game.PlaceId ~= 155615604 then
-    warn("[VexHub] This script is only for Prison Life!")
+    warn("[VexHub] Этот скрипт предназначен только для игры Prison Life!")
     return
 end
 
@@ -20,132 +20,9 @@ local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Lighting = game:GetService("Lighting")
-local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
-
--- Default Language set to EN
-local CurrentLang = "EN"
-local Translations = {
-    EN = {
-        Home = "Home",
-        Main = "Main",
-        Visuals = "Visuals",
-        Settings = "Settings",
-        AimEnabled = "Aimbot",
-        TargetCriminals = "Target: Criminals",
-        TargetGuards = "Target: Guards",
-        TargetInmates = "Target: Inmates",
-        WallCheck = "Wall Check",
-        FovRadius = "FOV Radius",
-        InfStamina = "Infinite Stamina",
-        SpeedHack = "Speed Hack",
-        SpeedHackVal = "Movement Speed",
-        FastPunch = "Fast Punch",
-        Noclip = "Noclip",
-        EspEnabled = "Player ESP",
-        Fullbright = "Fullbright Map",
-        AntiAFK = "Anti-AFK",
-        ResetChar = "Reset Character",
-        Rejoin = "Rejoin Server",
-        ServerHop = "Server Hop",
-        Notifications = "Notifications",
-        SaveConfig = "Save Config",
-        LoadConfig = "Load Config",
-        Language = "Language / Язык",
-        UnloadUI = "Unload Script",
-        -- Tooltips
-        TT_AimEnabled = "Automatically aims at players inside the FOV circle.",
-        TT_TargetCriminals = "Allow aimbotting on Criminals team.",
-        TT_TargetGuards = "Allow aimbotting on Guards team.",
-        TT_TargetInmates = "Allow aimbotting on Inmates team.",
-        TT_WallCheck = "Do not aim if target is behind walls.",
-        TT_FovRadius = "Adjusts the target acquisition circle size.",
-        TT_InfStamina = "Sprint stamina will never deplete.",
-        TT_SpeedHack = "Enables custom walkspeed multiplier.",
-        TT_SpeedHackVal = "Set custom movement speed value.",
-        TT_FastPunch = "Removes cooldown delay between punches.",
-        TT_Noclip = "Allows walking through walls and structures.",
-        TT_EspEnabled = "Displays player highlights through obstacles.",
-        TT_Fullbright = "Makes the entire map bright removing fog and night.",
-        TT_AntiAFK = "Prevents idle disconnect kicks.",
-        TT_Rejoin = "Rejoins the current server session.",
-        TT_ServerHop = "Searches for and joins a different active server.",
-        TT_SaveConfig = "Saves current feature configuration.",
-        TT_LoadConfig = "Loads saved feature settings."
-    },
-    RU = {
-        Home = "Главная",
-        Main = "Основные",
-        Visuals = "Визуалы",
-        Settings = "Настройки",
-        AimEnabled = "Aimbot",
-        TargetCriminals = "Цель: Преступники",
-        TargetGuards = "Цель: Охрана",
-        TargetInmates = "Цель: Заключенные",
-        WallCheck = "Проверка стен",
-        FovRadius = "Радиус FOV",
-        InfStamina = "Бесконечная выносливость",
-        SpeedHack = "Speed Hack",
-        SpeedHackVal = "Скорость бега",
-        FastPunch = "Быстрый удар",
-        Noclip = "Проход сквозь стены (Noclip)",
-        EspEnabled = "Подсветка игроков (ESP)",
-        Fullbright = "Светлая карта (Fullbright)",
-        AntiAFK = "Анти-АФК",
-        ResetChar = "Сбросить персонажа",
-        Rejoin = "Перезайти",
-        ServerHop = "Сменить сервер",
-        Notifications = "Уведомления",
-        SaveConfig = "Сохранить конфиг",
-        LoadConfig = "Загрузить конфиг",
-        Language = "Язык / Language",
-        UnloadUI = "Выгрузить скрипт",
-        -- Tooltips
-        TT_AimEnabled = "Автоматическое наведение прицела на игроков в зоне FOV.",
-        TT_TargetCriminals = "Разрешить наведение на красную команду.",
-        TT_TargetGuards = "Разрешить наведение на синюю команду.",
-        TT_TargetInmates = "Разрешить наведение на оранжевую команду.",
-        TT_WallCheck = "Не наводиться, если игрок за стеной.",
-        TT_FovRadius = "Размер круга захвата цели для Aimbot.",
-        TT_InfStamina = "Выносливость при беге больше не расходуется.",
-        TT_SpeedHack = "Включает пользовательскую скорость передвижения.",
-        TT_SpeedHackVal = "Устанавливает значение скорости бега персонажа.",
-        TT_FastPunch = "Убирает задержку между ударами кулаками.",
-        TT_Noclip = "Позволяет ходить сквозь стены и объекты.",
-        TT_EspEnabled = "Подсвечивает всех игроков силуэтами их команд.",
-        TT_Fullbright = "Делает карту полностью освещенной без теней и ночи.",
-        TT_AntiAFK = "Предотвращает кик из игры за бездействие.",
-        TT_Rejoin = "Перезаходит на текущий сервер.",
-        TT_ServerHop = "Автоматически находит и подключает к новому серверу.",
-        TT_SaveConfig = "Сохраняет текущие настройки в файл.",
-        TT_LoadConfig = "Загружает ранее сохраненные настройки."
-    }
-}
-
-local function tr(key)
-    return (Translations[CurrentLang] and Translations[CurrentLang][key]) or (Translations["EN"][key] or key)
-end
-
--- Feature State
-local FeatureState = {
-    AimEnabled = false,
-    FovRadius = 100,
-    WallCheck = true,
-    TargetCriminals = true,
-    TargetGuards = true,
-    TargetInmates = true,
-    EspEnabled = false,
-    Fullbright = false,
-    InfStamina = false,
-    SpeedHack = false,
-    SpeedHackValue = 32,
-    Noclip = false,
-    FastPunch = false,
-    AntiAFK = true
-}
 
 -- Colors
 local C_BG         = Color3.fromRGB(13, 13, 13)
@@ -154,12 +31,31 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(46, 204, 113)
+local C_TOGGLE_ON  = Color3.fromRGB(255, 255, 255)
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
+local C_FAINT      = Color3.fromRGB(90, 90, 90)
+local C_GREEN      = Color3.fromRGB(34, 197, 94)
 
--- UI Parent Setup
+-- Feature Settings
+local FeatureState = {
+    AimEnabled = false,
+    FovRadius = 100,
+    WallCheck = true,
+    TargetCriminals = true, -- Красные
+    TargetGuards = true,    -- Синие
+    TargetInmates = true,   -- Оранжевые
+    EspEnabled = false,
+    InfStamina = false,
+    SpeedBoost = false,
+    SpeedValue = 24,
+    Noclip = false,
+    FastPunch = false,
+    AntiAFK = true
+}
+
+-- Container
 local targetParent = CoreGui
 if gethui then targetParent = gethui() end
 
@@ -201,6 +97,7 @@ NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifLayout.Parent = NotifContainer
 
 local notifEnabled = true
+local notifDuration = 3
 
 local function notify(title, msg)
     if not notifEnabled then return end
@@ -251,7 +148,7 @@ local function notify(title, msg)
     TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
     TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
 
-    task.delay(3, function()
+    task.delay(notifDuration, function()
         if card and card.Parent then
             local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
             TweenService:Create(card, tweenInfoOut, {BackgroundTransparency = 1, Position = UDim2.new(1, 50, 0, 0)}):Play()
@@ -266,65 +163,6 @@ local function notify(title, msg)
         end
     end)
 end
-
--- Tooltip System
-local TooltipFrame = Instance.new("Frame")
-TooltipFrame.Name = "TooltipFrame"
-TooltipFrame.Size = UDim2.new(0, 240, 0, 45)
-TooltipFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-TooltipFrame.BorderSizePixel = 0
-TooltipFrame.Visible = false
-TooltipFrame.ZIndex = 100
-TooltipFrame.Parent = ScreenGui
-createCorner(TooltipFrame, 8)
-
-local TooltipText = Instance.new("TextLabel")
-TooltipText.Size = UDim2.new(1, -16, 1, -10)
-TooltipText.Position = UDim2.new(0, 8, 0, 5)
-TooltipText.BackgroundTransparency = 1
-TooltipText.TextColor3 = C_TEXT
-TooltipText.Font = Enum.Font.GothamMedium
-TooltipText.TextSize = 11
-TooltipText.TextWrapped = true
-TooltipText.ZIndex = 101
-TooltipText.Parent = TooltipFrame
-
-local function hideTooltip()
-    TooltipFrame.Visible = false
-    TooltipText.Text = ""
-end
-
-local function showTooltip(desc)
-    if not desc or desc == "" then return end
-    TooltipText.Text = desc
-    TooltipFrame.Visible = true
-end
-
-local function bindTooltip(guiObject, tooltipKey)
-    guiObject.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            showTooltip(tr(tooltipKey))
-        end
-    end)
-
-    guiObject.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            hideTooltip()
-        end
-    end)
-end
-
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        hideTooltip()
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if TooltipFrame.Visible and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        TooltipFrame.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
-    end
-end)
 
 -- Main Window
 local MainFrame = Instance.new("Frame")
@@ -391,7 +229,53 @@ TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabListLayout.Padding = UDim.new(0, 4)
 TabListLayout.Parent = TabListFrame
 
--- Content Frame
+-- Profile
+local ProfileCard = Instance.new("Frame")
+ProfileCard.Size = UDim2.new(1, -24, 0, 50)
+ProfileCard.Position = UDim2.new(0, 12, 1, -60)
+ProfileCard.BackgroundColor3 = C_CARD
+ProfileCard.BackgroundTransparency = 0.1
+ProfileCard.Parent = Sidebar
+createCorner(ProfileCard, 8)
+
+local ProfileAvatar = Instance.new("ImageLabel")
+ProfileAvatar.Size = UDim2.new(0, 34, 0, 34)
+ProfileAvatar.Position = UDim2.new(0, 8, 0, 8)
+ProfileAvatar.BackgroundTransparency = 1
+ProfileAvatar.Parent = ProfileCard
+createCorner(ProfileAvatar, 17)
+
+task.spawn(function()
+    local content, isReady = Players:GetUserThumbnailAsync(
+        LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100
+    )
+    if isReady then ProfileAvatar.Image = content end
+end)
+
+local ProfileName = Instance.new("TextLabel")
+ProfileName.Size = UDim2.new(1, -52, 0, 16)
+ProfileName.Position = UDim2.new(0, 48, 0, 9)
+ProfileName.BackgroundTransparency = 1
+ProfileName.Text = LocalPlayer.DisplayName
+ProfileName.TextColor3 = C_TEXT
+ProfileName.Font = Enum.Font.GothamBold
+ProfileName.TextSize = 12
+ProfileName.TextXAlignment = Enum.TextXAlignment.Left
+ProfileName.TextTruncate = Enum.TextTruncate.AtEnd
+ProfileName.Parent = ProfileCard
+
+local ProfileSub = Instance.new("TextLabel")
+ProfileSub.Size = UDim2.new(1, -52, 0, 14)
+ProfileSub.Position = UDim2.new(0, 48, 0, 25)
+ProfileSub.BackgroundTransparency = 1
+ProfileSub.Text = "Prison Life"
+ProfileSub.TextColor3 = C_MUTED
+ProfileSub.Font = Enum.Font.GothamMedium
+ProfileSub.TextSize = 10
+ProfileSub.TextXAlignment = Enum.TextXAlignment.Left
+ProfileSub.Parent = ProfileCard
+
+-- Content
 local Content = Instance.new("Frame")
 Content.Name = "Content"
 Content.Size = UDim2.new(1, -220, 1, 0)
@@ -423,7 +307,7 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- UI Builders
+-- Controls Builder
 local function clearContent()
     for _, child in ipairs(Content:GetChildren()) do
         if child.Name ~= "ContentTop" and child.Name ~= "Footer" then
@@ -455,7 +339,7 @@ local function makeScrollingFrame()
     return sf
 end
 
-local function createToggle(parent, titleKey, defaultState, callback)
+local function createToggle(parent, title, defaultState, callback)
     local state = defaultState or false
 
     local row = Instance.new("TextButton")
@@ -471,7 +355,7 @@ local function createToggle(parent, titleKey, defaultState, callback)
     lbl.Size = UDim2.new(1, -60, 1, 0)
     lbl.Position = UDim2.new(0, 14, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = tr(titleKey)
+    lbl.Text = title
     lbl.TextColor3 = C_TEXT
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
@@ -492,19 +376,25 @@ local function createToggle(parent, titleKey, defaultState, callback)
     knob.Parent = pill
     createCorner(knob, 9)
 
-    bindTooltip(row, "TT_" .. titleKey)
+    row.MouseEnter:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+    end)
+    row.MouseLeave:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
+    end)
 
     row.MouseButton1Click:Connect(function()
         state = not state
         TweenService:Create(pill, TweenInfo.new(0.16), {BackgroundColor3 = state and C_TOGGLE_ON or C_TOGGLE_OFF}):Play()
         TweenService:Create(knob, TweenInfo.new(0.16), {Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)}):Play()
+        notify(title, state and "Включено" or "Выключено")
         pcall(callback, state)
     end)
 
     return row
 end
 
-local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callback)
+local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     local value = defaultVal or minVal
 
     local card = Instance.new("Frame")
@@ -518,7 +408,7 @@ local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callba
     lbl.Size = UDim2.new(0.7, 0, 0, 20)
     lbl.Position = UDim2.new(0, 14, 0, 8)
     lbl.BackgroundTransparency = 1
-    lbl.Text = tr(titleKey)
+    lbl.Text = title
     lbl.TextColor3 = C_TEXT
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
@@ -545,11 +435,9 @@ local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callba
 
     local fill = Instance.new("Frame")
     fill.Size = UDim2.new((value - minVal) / (maxVal - minVal), 0, 1, 0)
-    fill.BackgroundColor3 = C_TOGGLE_ON
+    fill.BackgroundColor3 = C_ACCENT
     fill.Parent = track
     createCorner(fill, 3)
-
-    bindTooltip(card, "TT_" .. titleKey)
 
     local dragging = false
     local function updateFromInput(input)
@@ -582,7 +470,7 @@ local function createSlider(parent, titleKey, minVal, maxVal, defaultVal, callba
     return card
 end
 
-local function createButton(parent, titleKey, callback)
+local function createButton(parent, title, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 44)
     btn.BackgroundColor3 = C_CARD
@@ -595,19 +483,24 @@ local function createButton(parent, titleKey, callback)
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, 0, 1, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = tr(titleKey)
+    lbl.Text = title
     lbl.TextColor3 = C_TEXT
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
     lbl.Parent = btn
 
-    bindTooltip(btn, "TT_" .. titleKey)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
+    end)
 
     btn.MouseButton1Click:Connect(function() pcall(callback) end)
     return btn
 end
 
--- Tabs Manager
+-- Tab Management
 local currentTab = "Home"
 local tabs = {}
 
@@ -619,7 +512,7 @@ local function selectTab(name)
             data.lbl.TextColor3 = C_ACCENT
             data.iconImg.ImageColor3 = C_ACCENT
             TabIconHeader.Image = data.iconAsset
-            TabTitleHeader.Text = tr(data.labelKey)
+            TabTitleHeader.Text = data.label
             clearContent()
             data.build()
         else
@@ -630,7 +523,7 @@ local function selectTab(name)
     end
 end
 
-local function registerTab(name, iconAsset, labelKey, buildFunc, order)
+local function registerTab(name, iconAsset, label, buildFunc, order)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = C_SIDEBAR
@@ -653,26 +546,97 @@ local function registerTab(name, iconAsset, labelKey, buildFunc, order)
     lbl.Size = UDim2.new(1, -40, 1, 0)
     lbl.Position = UDim2.new(0, 38, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = tr(labelKey)
+    lbl.Text = label
     lbl.TextColor3 = C_MUTED
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = btn
 
+    btn.MouseEnter:Connect(function()
+        if currentTab ~= name then TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play() end
+    end)
+    btn.MouseLeave:Connect(function()
+        if currentTab ~= name then TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play() end
+    end)
+
     btn.MouseButton1Click:Connect(function() selectTab(name) end)
 
     tabs[name] = {
-        btn = btn, iconAsset = iconAsset, labelKey = labelKey, lbl = lbl, iconImg = iconImg, build = buildFunc
+        btn = btn, iconAsset = iconAsset, label = label, lbl = lbl, iconImg = iconImg, build = buildFunc
     }
 end
 
--- Tab Content Builders
+-- TAB BUILDERS
+local function buildMainTab()
+    local sf = makeScrollingFrame()
+
+    createToggle(sf, "Aimbot", FeatureState.AimEnabled, function(v)
+        FeatureState.AimEnabled = v
+        FovCircle.Visible = v
+    end)
+
+    createToggle(sf, "Target Criminals (Красные)", FeatureState.TargetCriminals, function(v)
+        FeatureState.TargetCriminals = v
+    end)
+
+    createToggle(sf, "Target Guards (Синие)", FeatureState.TargetGuards, function(v)
+        FeatureState.TargetGuards = v
+    end)
+
+    createToggle(sf, "Target Inmates (Оранжевые)", FeatureState.TargetInmates, function(v)
+        FeatureState.TargetInmates = v
+    end)
+
+    createToggle(sf, "Wall Check", FeatureState.WallCheck, function(v)
+        FeatureState.WallCheck = v
+    end)
+
+    createSlider(sf, "FOV Radius", 30, 400, FeatureState.FovRadius, function(v)
+        FeatureState.FovRadius = v
+        FovCircle.Radius = v
+    end)
+
+    createToggle(sf, "Inf Stamina", FeatureState.InfStamina, function(v)
+        FeatureState.InfStamina = v
+    end)
+
+    createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
+        FeatureState.SpeedBoost = v
+    end)
+
+    createToggle(sf, "Fast Punch", FeatureState.FastPunch, function(v)
+        FeatureState.FastPunch = v
+    end)
+
+    createToggle(sf, "Noclip", FeatureState.Noclip, function(v)
+        FeatureState.Noclip = v
+    end)
+end
+
+local function buildPlayerTab()
+    local sf = makeScrollingFrame()
+
+    createToggle(sf, "Esp", FeatureState.EspEnabled, function(v)
+        FeatureState.EspEnabled = v
+    end)
+
+    createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
+        FeatureState.AntiAFK = v
+    end)
+
+    createButton(sf, "Reset Character", function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.Health = 0
+        end
+    end)
+end
+
 local function buildHomeTab()
     local sf = makeScrollingFrame()
 
     local card1 = Instance.new("Frame")
-    card1.Size = UDim2.new(1, 0, 0, 110)
+    card1.Size = UDim2.new(1, 0, 0, 100)
     card1.BackgroundColor3 = C_CARD
     card1.BackgroundTransparency = 0.1
     card1.Parent = sf
@@ -680,9 +644,9 @@ local function buildHomeTab()
 
     local wbName = Instance.new("TextLabel")
     wbName.Size = UDim2.new(1, -20, 0, 30)
-    wbName.Position = UDim2.new(0, 16, 0, 18)
+    wbName.Position = UDim2.new(0, 16, 0, 20)
     wbName.BackgroundTransparency = 1
-    wbName.Text = "VexHub - Prison Life"
+    wbName.Text = "Welcome to VexHub"
     wbName.TextColor3 = C_TEXT
     wbName.Font = Enum.Font.GothamBold
     wbName.TextSize = 20
@@ -691,158 +655,35 @@ local function buildHomeTab()
 
     local wbUser = Instance.new("TextLabel")
     wbUser.Size = UDim2.new(1, -20, 0, 20)
-    wbUser.Position = UDim2.new(0, 16, 0, 52)
+    wbUser.Position = UDim2.new(0, 16, 0, 50)
     wbUser.BackgroundTransparency = 1
-    wbUser.Text = "Logged in as: " .. LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")"
+    wbUser.Text = "Prison Life Edition - Loaded Successfully"
     wbUser.TextColor3 = C_MUTED
     wbUser.Font = Enum.Font.GothamMedium
-    wbUser.TextSize = 12
+    wbUser.TextSize = 13
     wbUser.TextXAlignment = Enum.TextXAlignment.Left
     wbUser.Parent = card1
-
-    createButton(sf, "Rejoin", function()
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    end)
-
-    createButton(sf, "ServerHop", function()
-        notify("Server Hop", "Searching for available server...")
-        task.spawn(function()
-            local servers = {}
-            local req = request or http_request or (syn and syn.request)
-            if req then
-                local res = req({Url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"})
-                local data = HttpService:JSONDecode(res.Body)
-                if data and data.data then
-                    for _, v in ipairs(data.data) do
-                        if v.playing < v.maxPlayers and v.id ~= game.JobId then
-                            table.insert(servers, v.id)
-                        end
-                    end
-                end
-            end
-            if #servers > 0 then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
-            else
-                notify("Server Hop", "No other servers found.")
-            end
-        end)
-    end)
-end
-
-local function buildMainTab()
-    local sf = makeScrollingFrame()
-
-    createToggle(sf, "AimEnabled", FeatureState.AimEnabled, function(v)
-        FeatureState.AimEnabled = v
-        FovCircle.Visible = v
-    end)
-
-    createToggle(sf, "TargetCriminals", FeatureState.TargetCriminals, function(v) FeatureState.TargetCriminals = v end)
-    createToggle(sf, "TargetGuards", FeatureState.TargetGuards, function(v) FeatureState.TargetGuards = v end)
-    createToggle(sf, "TargetInmates", FeatureState.TargetInmates, function(v) FeatureState.TargetInmates = v end)
-    createToggle(sf, "WallCheck", FeatureState.WallCheck, function(v) FeatureState.WallCheck = v end)
-
-    createSlider(sf, "FovRadius", 30, 400, FeatureState.FovRadius, function(v)
-        FeatureState.FovRadius = v
-        FovCircle.Radius = v
-    end)
-
-    createToggle(sf, "InfStamina", FeatureState.InfStamina, function(v) FeatureState.InfStamina = v end)
-    createToggle(sf, "SpeedHack", FeatureState.SpeedHack, function(v) FeatureState.SpeedHack = v end)
-    createSlider(sf, "SpeedHackVal", 16, 150, FeatureState.SpeedHackValue, function(v) FeatureState.SpeedHackValue = v end)
-
-    createToggle(sf, "FastPunch", FeatureState.FastPunch, function(v) FeatureState.FastPunch = v end)
-    createToggle(sf, "Noclip", FeatureState.Noclip, function(v) FeatureState.Noclip = v end)
-end
-
-local function buildVisualsTab()
-    local sf = makeScrollingFrame()
-
-    createToggle(sf, "EspEnabled", FeatureState.EspEnabled, function(v) FeatureState.EspEnabled = v end)
-    createToggle(sf, "Fullbright", FeatureState.Fullbright, function(v) FeatureState.Fullbright = v end)
 end
 
 local function buildSettingsTab()
     local sf = makeScrollingFrame()
 
     createToggle(sf, "Notifications", notifEnabled, function(v) notifEnabled = v end)
-    createToggle(sf, "AntiAFK", FeatureState.AntiAFK, function(v) FeatureState.AntiAFK = v end)
 
-    local langCard = Instance.new("Frame")
-    langCard.Size = UDim2.new(1, 0, 0, 56)
-    langCard.BackgroundColor3 = C_CARD
-    langCard.BackgroundTransparency = 0.1
-    langCard.Parent = sf
-    createCorner(langCard, 10)
-
-    local langLbl = Instance.new("TextLabel")
-    langLbl.Size = UDim2.new(0.4, 0, 1, 0)
-    langLbl.Position = UDim2.new(0, 14, 0, 0)
-    langLbl.BackgroundTransparency = 1
-    langLbl.Text = tr("Language")
-    langLbl.TextColor3 = C_TEXT
-    langLbl.Font = Enum.Font.GothamMedium
-    langLbl.TextSize = 13
-    langLbl.TextXAlignment = Enum.TextXAlignment.Left
-    langLbl.Parent = langCard
-
-    local function makeLangBtn(text, langCode, posX)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 60, 0, 28)
-        btn.Position = UDim2.new(1, posX, 0.5, -14)
-        btn.BackgroundColor3 = (CurrentLang == langCode) and C_ACCENT or C_SIDEBAR
-        btn.Text = text
-        btn.TextColor3 = C_TEXT
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 11
-        btn.Parent = langCard
-        createCorner(btn, 6)
-
-        btn.MouseButton1Click:Connect(function()
-            CurrentLang = langCode
-            selectTab(currentTab)
-            for name, data in pairs(tabs) do
-                data.lbl.Text = tr(data.labelKey)
-            end
-        end)
-    end
-
-    makeLangBtn("RU", "RU", -135)
-    makeLangBtn("EN", "EN", -65)
-
-    createButton(sf, "SaveConfig", function()
-        if writefile then
-            writefile("VexHub_Config.json", HttpService:JSONEncode(FeatureState))
-            notify("Config", "Settings saved successfully!")
-        end
-    end)
-
-    createButton(sf, "LoadConfig", function()
-        if readfile and isfile and isfile("VexHub_Config.json") then
-            local data = HttpService:JSONDecode(readfile("VexHub_Config.json"))
-            if data then
-                for k, v in pairs(data) do FeatureState[k] = v end
-                selectTab(currentTab)
-                notify("Config", "Settings loaded successfully!")
-            end
-        end
-    end)
-
-    createButton(sf, "UnloadUI", function()
+    createButton(sf, "Unload UI", function()
         getgenv().VexHub_Loaded = false
         FovCircle:Remove()
         ScreenGui:Destroy()
     end)
 end
 
--- Register Navigation Tabs
+-- Register Tabs
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
-registerTab("Visuals", "rbxassetid://17412298151", "Visuals", buildVisualsTab, 3)
+registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
 
--- Select HOME tab by default on execution
-selectTab("Home")
+selectTab("Main")
 
 -- Window Dragging
 local dragging, dragStart, startPos
@@ -867,7 +708,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Floating Toggle Button
+-- UI Toggle Toggle
 local uiVisible = true
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
@@ -894,7 +735,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Raycast Target Check
+-- Wall Check
 local function isTargetVisible(targetPart)
     if not FeatureState.WallCheck then return true end
     local raycastParams = RaycastParams.new()
@@ -912,7 +753,7 @@ local function isTargetVisible(targetPart)
     return true
 end
 
--- Fast Punch Event
+-- Fast Punch Logic
 local mainRemotes = ReplicatedStorage:FindFirstChild("meleeEvent")
 UserInputService.InputBegan:Connect(function(input, gpe)
     if not gpe and FeatureState.FastPunch and input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -922,17 +763,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Anti-AFK
-local VirtualUser = game:GetService("VirtualUser")
-LocalPlayer.Idled:Connect(function()
-    if FeatureState.AntiAFK then
-        VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-    end
-end)
-
--- Noclip Execution Loop
+-- NOCLIP LOOP (Работает 100%)
 RunService.Stepped:Connect(function()
     if FeatureState.Noclip and LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -943,25 +774,18 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Main Render Loop
+-- MAIN CORE LOOP (Aimbot, ESP, Speed)
 RunService.RenderStepped:Connect(function()
+    -- FOV Circle
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
-    -- Speed Hack
-    if FeatureState.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.SpeedHackValue
+    -- Speed Boost
+    if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 26
     end
 
-    -- Fullbright
-    if FeatureState.Fullbright then
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 14
-        Lighting.GlobalShadows = false
-        Lighting.FogEnd = 100000
-    end
-
-    -- AIMBOT Logic
+    -- AIMBOT LOGIC
     if FeatureState.AimEnabled then
         local closestPlayer = nil
         local shortestDistance = FeatureState.FovRadius
@@ -996,7 +820,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ESP Logic
+    -- ESP LOGIC
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             local highlight = plr.Character:FindFirstChild("VexESP")
@@ -1007,22 +831,6 @@ RunService.RenderStepped:Connect(function()
                     highlight.FillTransparency = 0.5
                     highlight.OutlineTransparency = 0
                     highlight.Parent = plr.Character
-
-                    task.spawn(function()
-                        if LocalPlayer and LocalPlayer.UserId then
-                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-                            if hum then
-                                local ok, desc = pcall(function()
-                                    return Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
-                                end)
-                                if ok and desc and hum and hum.Parent then
-                                    pcall(function()
-                                        hum:ApplyDescription(desc)
-                                    end)
-                                end
-                            end
-                        end
-                    end)
                 end
 
                 local teamName = tostring(plr.Team)
@@ -1042,7 +850,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Metatable Hooking for Infinite Stamina
+-- INF STAMINA HOOK
 local rawmt = getrawmetatable(game)
 local oldIndex = rawmt.__index
 setreadonly(rawmt, false)
@@ -1055,4 +863,4 @@ rawmt.__index = newcclosure(function(self, idx)
 end)
 setreadonly(rawmt, true)
 
-notify("VexHub", "Script successfully loaded!")
+notify("VexHub", "Загружено успешно! Были внесены исправления.")
