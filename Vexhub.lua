@@ -1,5 +1,6 @@
 --[[
-    VexHub - Prison Life Edition (Fixed & Updated)
+    VexHub - Prison Life Edition
+    Created by DevScripts
 --]]
 
 if game.PlaceId ~= 155615604 then
@@ -19,7 +20,6 @@ local Stats = game:GetService("Stats")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -42,16 +42,14 @@ local C_GREEN      = Color3.fromRGB(34, 197, 94)
 local FeatureState = {
     AimEnabled = false,
     FovRadius = 100,
+    TeamCheck = true,
     WallCheck = true,
-    TargetCriminals = true, -- Красные
-    TargetGuards = true,    -- Синие
-    TargetInmates = true,   -- Оранжевые
     EspEnabled = false,
     InfStamina = false,
     SpeedBoost = false,
-    SpeedValue = 24,
     Noclip = false,
     FastPunch = false,
+    GodMode = false,
     AntiAFK = true
 }
 
@@ -73,7 +71,7 @@ local function createCorner(parent, radius)
     return corner
 end
 
--- FOV Circle
+-- FOV Circle (Fixed in Center)
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = C_ACCENT
 FovCircle.Thickness = 1.5
@@ -82,7 +80,7 @@ FovCircle.Radius = FeatureState.FovRadius
 FovCircle.Filled = false
 FovCircle.Visible = false
 
--- Notifications
+-- Notifications (Bottom Right Position)
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
 NotifContainer.Size = UDim2.new(0, 340, 0, 180)
@@ -142,12 +140,14 @@ local function notify(title, msg)
     mLabel.Text = msg
     mLabel.Parent = card
 
+    -- Slide in + Fade in
     local tweenInfoIn = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     TweenService:Create(card, tweenInfoIn, {BackgroundTransparency = 0.15, Position = UDim2.new(0, 0, 0, 0)}):Play()
     TweenService:Create(bar, tweenInfoIn, {BackgroundTransparency = 0}):Play()
     TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
     TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
 
+    -- Fade out + Slide out
     task.delay(notifDuration, function()
         if card and card.Parent then
             local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
@@ -189,6 +189,7 @@ SideHeader.Size = UDim2.new(1, 0, 0, 60)
 SideHeader.BackgroundTransparency = 1
 SideHeader.Parent = Sidebar
 
+-- Указанная текстура логотипа рядом с VexHub
 local LogoIcon = Instance.new("ImageLabel")
 LogoIcon.Size = UDim2.new(0, 24, 0, 24)
 LogoIcon.Position = UDim2.new(0, 14, 0, 18)
@@ -229,7 +230,7 @@ TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabListLayout.Padding = UDim.new(0, 4)
 TabListLayout.Parent = TabListFrame
 
--- Profile
+-- Sidebar Profile
 local ProfileCard = Instance.new("Frame")
 ProfileCard.Size = UDim2.new(1, -24, 0, 50)
 ProfileCard.Position = UDim2.new(0, 12, 1, -60)
@@ -307,7 +308,73 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- Controls Builder
+-- Search Bar
+local SearchBar = Instance.new("Frame")
+SearchBar.Size = UDim2.new(0, 180, 0, 32)
+SearchBar.Position = UDim2.new(1, -195, 0, 14)
+SearchBar.BackgroundColor3 = C_CARD
+SearchBar.BackgroundTransparency = 0.1
+SearchBar.Parent = ContentTop
+createCorner(SearchBar, 8)
+
+local SearchIcon = Instance.new("TextLabel")
+SearchIcon.Size = UDim2.new(0, 24, 1, 0)
+SearchIcon.Position = UDim2.new(0, 6, 0, 0)
+SearchIcon.BackgroundTransparency = 1
+SearchIcon.Text = "🔍"
+SearchIcon.TextSize = 12
+SearchIcon.Parent = SearchBar
+
+local SearchInput = Instance.new("TextBox")
+SearchInput.Size = UDim2.new(1, -34, 1, 0)
+SearchInput.Position = UDim2.new(0, 30, 0, 0)
+SearchInput.BackgroundTransparency = 1
+SearchInput.PlaceholderText = "Search..."
+SearchInput.PlaceholderColor3 = C_FAINT
+SearchInput.Text = ""
+SearchInput.TextColor3 = C_TEXT
+SearchInput.Font = Enum.Font.GothamMedium
+SearchInput.TextSize = 12
+SearchInput.TextXAlignment = Enum.TextXAlignment.Left
+SearchInput.Parent = SearchBar
+
+-- Footer
+local Footer = Instance.new("Frame")
+Footer.Name = "Footer"
+Footer.Size = UDim2.new(1, -30, 0, 30)
+Footer.Position = UDim2.new(0, 15, 1, -35)
+Footer.BackgroundTransparency = 1
+Footer.Parent = Content
+
+local FooterDot = Instance.new("Frame")
+FooterDot.Size = UDim2.new(0, 8, 0, 8)
+FooterDot.Position = UDim2.new(0, 0, 0.5, -4)
+FooterDot.BackgroundColor3 = C_GREEN
+FooterDot.Parent = Footer
+createCorner(FooterDot, 4)
+
+local FooterText = Instance.new("TextLabel")
+FooterText.Size = UDim2.new(0, 300, 1, 0)
+FooterText.Position = UDim2.new(0, 14, 0, 0)
+FooterText.BackgroundTransparency = 1
+FooterText.Text = "Your executor is supported and fully compatible."
+FooterText.TextColor3 = C_MUTED
+FooterText.Font = Enum.Font.GothamMedium
+FooterText.TextSize = 11
+FooterText.TextXAlignment = Enum.TextXAlignment.Left
+FooterText.Parent = Footer
+
+local FooterRight = Instance.new("TextLabel")
+FooterRight.Size = UDim2.new(0, 200, 1, 0)
+FooterRight.Position = UDim2.new(1, -200, 0, 0)
+FooterRight.BackgroundTransparency = 1
+FooterRight.Text = "Tap the pill or RShift"
+FooterRight.TextColor3 = C_FAINT
+FooterRight.Font = Enum.Font.GothamMedium
+FooterRight.TextSize = 11
+FooterRight.TextXAlignment = Enum.TextXAlignment.Right
+FooterRight.Parent = Footer
+
 local function clearContent()
     for _, child in ipairs(Content:GetChildren()) do
         if child.Name ~= "ContentTop" and child.Name ~= "Footer" then
@@ -319,7 +386,7 @@ end
 local function makeScrollingFrame()
     local sf = Instance.new("ScrollingFrame")
     sf.Name = "TabScroll"
-    sf.Size = UDim2.new(1, -30, 1, -70)
+    sf.Size = UDim2.new(1, -30, 1, -100)
     sf.Position = UDim2.new(0, 15, 0, 65)
     sf.BackgroundTransparency = 1
     sf.BorderSizePixel = 0
@@ -339,6 +406,7 @@ local function makeScrollingFrame()
     return sf
 end
 
+-- Controls Builder
 local function createToggle(parent, title, defaultState, callback)
     local state = defaultState or false
 
@@ -392,6 +460,36 @@ local function createToggle(parent, title, defaultState, callback)
     end)
 
     return row
+end
+
+local function createButton(parent, title, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 44)
+    btn.BackgroundColor3 = C_CARD
+    btn.BackgroundTransparency = 0.1
+    btn.AutoButtonColor = false
+    btn.Text = ""
+    btn.Parent = parent
+    createCorner(btn, 10)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = title
+    lbl.TextColor3 = C_TEXT
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextSize = 13
+    lbl.Parent = btn
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
+    end)
+
+    btn.MouseButton1Click:Connect(function() pcall(callback) end)
+    return btn
 end
 
 local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
@@ -470,36 +568,6 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, callback)
     return card
 end
 
-local function createButton(parent, title, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 44)
-    btn.BackgroundColor3 = C_CARD
-    btn.BackgroundTransparency = 0.1
-    btn.AutoButtonColor = false
-    btn.Text = ""
-    btn.Parent = parent
-    createCorner(btn, 10)
-
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = title
-    lbl.TextColor3 = C_TEXT
-    lbl.Font = Enum.Font.GothamMedium
-    lbl.TextSize = 13
-    lbl.Parent = btn
-
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD}):Play()
-    end)
-
-    btn.MouseButton1Click:Connect(function() pcall(callback) end)
-    return btn
-end
-
 -- Tab Management
 local currentTab = "Home"
 local tabs = {}
@@ -567,7 +635,246 @@ local function registerTab(name, iconAsset, label, buildFunc, order)
     }
 end
 
+local startTime = tick()
+
 -- TAB BUILDERS
+local function buildHomeTab()
+    local sf = makeScrollingFrame()
+
+    -- Card 1: WELCOME
+    local card1 = Instance.new("Frame")
+    card1.Size = UDim2.new(1, 0, 0, 130)
+    card1.BackgroundColor3 = C_CARD
+    card1.BackgroundTransparency = 0.1
+    card1.Parent = sf
+    createCorner(card1, 10)
+
+    local wbFaint = Instance.new("TextLabel")
+    wbFaint.Size = UDim2.new(0, 200, 0, 14)
+    wbFaint.Position = UDim2.new(0, 16, 0, 14)
+    wbFaint.BackgroundTransparency = 1
+    wbFaint.Text = "WELCOME BACK"
+    wbFaint.TextColor3 = C_FAINT
+    wbFaint.Font = Enum.Font.GothamBold
+    wbFaint.TextSize = 10
+    wbFaint.TextXAlignment = Enum.TextXAlignment.Left
+    wbFaint.Parent = card1
+
+    local wbName = Instance.new("TextLabel")
+    wbName.Size = UDim2.new(1, -140, 0, 30)
+    wbName.Position = UDim2.new(0, 16, 0, 30)
+    wbName.BackgroundTransparency = 1
+    wbName.Text = LocalPlayer.DisplayName
+    wbName.TextColor3 = C_TEXT
+    wbName.Font = Enum.Font.GothamBold
+    wbName.TextSize = 24
+    wbName.TextXAlignment = Enum.TextXAlignment.Left
+    wbName.TextTruncate = Enum.TextTruncate.AtEnd
+    wbName.Parent = card1
+
+    local wbUser = Instance.new("TextLabel")
+    wbUser.Size = UDim2.new(1, -140, 0, 16)
+    wbUser.Position = UDim2.new(0, 16, 0, 62)
+    wbUser.BackgroundTransparency = 1
+    wbUser.Text = "@" .. LocalPlayer.Name
+    wbUser.TextColor3 = C_MUTED
+    wbUser.Font = Enum.Font.GothamMedium
+    wbUser.TextSize = 12
+    wbUser.TextXAlignment = Enum.TextXAlignment.Left
+    wbUser.Parent = card1
+
+    local bigAvatar = Instance.new("ImageLabel")
+    bigAvatar.Size = UDim2.new(0, 100, 0, 100)
+    bigAvatar.Position = UDim2.new(1, -115, 0.5, -50)
+    bigAvatar.BackgroundTransparency = 1
+    bigAvatar.Parent = card1
+    createCorner(bigAvatar, 50)
+
+    task.spawn(function()
+        local content, isReady = Players:GetUserThumbnailAsync(
+            LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150
+        )
+        if isReady then bigAvatar.Image = content end
+    end)
+
+    -- Card 2: FPS/PING
+    local card2 = Instance.new("Frame")
+    card2.Size = UDim2.new(1, 0, 0, 130)
+    card2.BackgroundColor3 = C_CARD
+    card2.BackgroundTransparency = 0.1
+    card2.Parent = sf
+    createCorner(card2, 10)
+
+    local fpsFaint = Instance.new("TextLabel")
+    fpsFaint.Size = UDim2.new(0.45, 0, 0, 14)
+    fpsFaint.Position = UDim2.new(0, 16, 0, 16)
+    fpsFaint.BackgroundTransparency = 1
+    fpsFaint.Text = "FPS"
+    fpsFaint.TextColor3 = C_FAINT
+    fpsFaint.Font = Enum.Font.GothamBold
+    fpsFaint.TextSize = 10
+    fpsFaint.TextXAlignment = Enum.TextXAlignment.Left
+    fpsFaint.Parent = card2
+
+    local fpsVal = Instance.new("TextLabel")
+    fpsVal.Size = UDim2.new(0.45, 0, 0, 30)
+    fpsVal.Position = UDim2.new(0, 16, 0, 32)
+    fpsVal.BackgroundTransparency = 1
+    fpsVal.Text = "60"
+    fpsVal.TextColor3 = C_GREEN
+    fpsVal.Font = Enum.Font.GothamBold
+    fpsVal.TextSize = 22
+    fpsVal.TextXAlignment = Enum.TextXAlignment.Left
+    fpsVal.Parent = card2
+
+    local pingFaint = Instance.new("TextLabel")
+    pingFaint.Size = UDim2.new(0.45, 0, 0, 14)
+    pingFaint.Position = UDim2.new(0.5, 0, 0, 16)
+    pingFaint.BackgroundTransparency = 1
+    pingFaint.Text = "PING"
+    pingFaint.TextColor3 = C_FAINT
+    pingFaint.Font = Enum.Font.GothamBold
+    pingFaint.TextSize = 10
+    pingFaint.TextXAlignment = Enum.TextXAlignment.Left
+    pingFaint.Parent = card2
+
+    local pingVal = Instance.new("TextLabel")
+    pingVal.Size = UDim2.new(0.45, 0, 0, 30)
+    pingVal.Position = UDim2.new(0.5, 0, 0, 32)
+    pingVal.BackgroundTransparency = 1
+    pingVal.Text = "45 ms"
+    pingVal.TextColor3 = C_GREEN
+    pingVal.Font = Enum.Font.GothamBold
+    pingVal.TextSize = 22
+    pingVal.TextXAlignment = Enum.TextXAlignment.Left
+    pingVal.Parent = card2
+
+    local plrsFaint = Instance.new("TextLabel")
+    plrsFaint.Size = UDim2.new(0.45, 0, 0, 14)
+    plrsFaint.Position = UDim2.new(0, 16, 0, 85)
+    plrsFaint.BackgroundTransparency = 1
+    plrsFaint.Text = "0/0 PLAYERS"
+    plrsFaint.TextColor3 = C_FAINT
+    plrsFaint.Font = Enum.Font.GothamBold
+    plrsFaint.TextSize = 10
+    plrsFaint.TextXAlignment = Enum.TextXAlignment.Left
+    plrsFaint.Parent = card2
+
+    local sessFaint = Instance.new("TextLabel")
+    sessFaint.Size = UDim2.new(0.45, 0, 0, 14)
+    sessFaint.Position = UDim2.new(0.5, 0, 0, 85)
+    sessFaint.BackgroundTransparency = 1
+    sessFaint.Text = "0s SESSION"
+    sessFaint.TextColor3 = C_FAINT
+    sessFaint.Font = Enum.Font.GothamBold
+    sessFaint.TextSize = 10
+    sessFaint.TextXAlignment = Enum.TextXAlignment.Left
+    sessFaint.Parent = card2
+
+    local frameCount = 0
+    local lastFpsUpdate = tick()
+    local fpsConnection
+
+    fpsConnection = RunService.RenderStepped:Connect(function()
+        frameCount = frameCount + 1
+        local now = tick()
+        if now - lastFpsUpdate >= 1 then
+            if card2 and card2.Parent then
+                fpsVal.Text = tostring(frameCount)
+                local ping = 0
+                pcall(function() ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end)
+                pingVal.Text = tostring(ping) .. " ms"
+                plrsFaint.Text = string.format("%d/%d PLAYERS", #Players:GetPlayers(), Players.MaxPlayers)
+                sessFaint.Text = string.format("%ds SESSION", math.floor(tick() - startTime))
+            else
+                fpsConnection:Disconnect()
+            end
+            frameCount = 0
+            lastFpsUpdate = now
+        end
+    end)
+
+    -- Card 3: Game Info
+    local card3 = Instance.new("Frame")
+    card3.Size = UDim2.new(1, 0, 0, 130)
+    card3.BackgroundColor3 = C_CARD
+    card3.BackgroundTransparency = 0.1
+    card3.Parent = sf
+    createCorner(card3, 10)
+
+    local gameIcon = Instance.new("ImageLabel")
+    gameIcon.Size = UDim2.new(0, 50, 0, 50)
+    gameIcon.Position = UDim2.new(0, 16, 0, 16)
+    gameIcon.BackgroundColor3 = C_SIDEBAR
+    gameIcon.Image = "rbxassetid://122728613872558"
+    gameIcon.Parent = card3
+    createCorner(gameIcon, 8)
+
+    local gameTitle = Instance.new("TextLabel")
+    gameTitle.Size = UDim2.new(1, -90, 0, 20)
+    gameTitle.Position = UDim2.new(0, 76, 0, 18)
+    gameTitle.BackgroundTransparency = 1
+    gameTitle.Text = "Тюремная жизнь"
+    gameTitle.TextColor3 = C_TEXT
+    gameTitle.Font = Enum.Font.GothamBold
+    gameTitle.TextSize = 15
+    gameTitle.TextXAlignment = Enum.TextXAlignment.Left
+    gameTitle.Parent = card3
+
+    local gameSub = Instance.new("TextLabel")
+    gameSub.Size = UDim2.new(1, -90, 0, 16)
+    gameSub.Position = UDim2.new(0, 76, 0, 40)
+    gameSub.BackgroundTransparency = 1
+    gameSub.Text = string.format("by DevScripts · %d/%d players", #Players:GetPlayers(), Players.MaxPlayers)
+    gameSub.TextColor3 = C_MUTED
+    gameSub.Font = Enum.Font.GothamMedium
+    gameSub.TextSize = 11
+    gameSub.TextXAlignment = Enum.TextXAlignment.Left
+    gameSub.Parent = card3
+
+    local btnRow = Instance.new("Frame")
+    btnRow.Size = UDim2.new(1, -32, 0, 34)
+    btnRow.Position = UDim2.new(0, 16, 0, 80)
+    btnRow.BackgroundTransparency = 1
+    btnRow.Parent = card3
+
+    local btnRowLayout = Instance.new("UIListLayout")
+    btnRowLayout.FillDirection = Enum.FillDirection.Horizontal
+    btnRowLayout.Padding = UDim.new(0, 8)
+    btnRowLayout.Parent = btnRow
+
+    local function makeRowBtn(title, callback)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0.25, -6, 1, 0)
+        btn.BackgroundColor3 = C_SIDEBAR
+        btn.BackgroundTransparency = 0.1
+        btn.AutoButtonColor = false
+        btn.Text = title
+        btn.TextColor3 = C_TEXT
+        btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 11
+        btn.Parent = btnRow
+        createCorner(btn, 6)
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play()
+        end)
+
+        btn.MouseButton1Click:Connect(function() pcall(callback) end)
+    end
+
+    makeRowBtn("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
+    makeRowBtn("Hop", function() notify("Server Hop", "Searching for another server...") end)
+    makeRowBtn("Lowest", function() notify("Server Hop", "Searching for lowest populated server...") end)
+    makeRowBtn("Job ID", function()
+        setclipboard(game.JobId)
+        notify("Clipboard", "Job ID copied to clipboard")
+    end)
+end
+
 local function buildMainTab()
     local sf = makeScrollingFrame()
 
@@ -576,23 +883,15 @@ local function buildMainTab()
         FovCircle.Visible = v
     end)
 
-    createToggle(sf, "Target Criminals (Красные)", FeatureState.TargetCriminals, function(v)
-        FeatureState.TargetCriminals = v
-    end)
-
-    createToggle(sf, "Target Guards (Синие)", FeatureState.TargetGuards, function(v)
-        FeatureState.TargetGuards = v
-    end)
-
-    createToggle(sf, "Target Inmates (Оранжевые)", FeatureState.TargetInmates, function(v)
-        FeatureState.TargetInmates = v
-    end)
-
-    createToggle(sf, "Wall Check", FeatureState.WallCheck, function(v)
+    createToggle(sf, "Wall Check (No Shoot Thru Walls)", FeatureState.WallCheck, function(v)
         FeatureState.WallCheck = v
     end)
 
-    createSlider(sf, "FOV Radius", 30, 400, FeatureState.FovRadius, function(v)
+    createToggle(sf, "Team Check (No Team Kill)", FeatureState.TeamCheck, function(v)
+        FeatureState.TeamCheck = v
+    end)
+
+    createSlider(sf, "FOV Radius", 30, 300, FeatureState.FovRadius, function(v)
         FeatureState.FovRadius = v
         FovCircle.Radius = v
     end)
@@ -603,6 +902,9 @@ local function buildMainTab()
 
     createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
         FeatureState.SpeedBoost = v
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = v and 25 or 16
+        end
     end)
 
     createToggle(sf, "Fast Punch", FeatureState.FastPunch, function(v)
@@ -617,8 +919,13 @@ end
 local function buildPlayerTab()
     local sf = makeScrollingFrame()
 
+    -- Переименовано просто в Esp
     createToggle(sf, "Esp", FeatureState.EspEnabled, function(v)
         FeatureState.EspEnabled = v
+    end)
+
+    createToggle(sf, "God Mode", FeatureState.GodMode, function(v)
+        FeatureState.GodMode = v
     end)
 
     createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
@@ -632,43 +939,12 @@ local function buildPlayerTab()
     end)
 end
 
-local function buildHomeTab()
-    local sf = makeScrollingFrame()
-
-    local card1 = Instance.new("Frame")
-    card1.Size = UDim2.new(1, 0, 0, 100)
-    card1.BackgroundColor3 = C_CARD
-    card1.BackgroundTransparency = 0.1
-    card1.Parent = sf
-    createCorner(card1, 10)
-
-    local wbName = Instance.new("TextLabel")
-    wbName.Size = UDim2.new(1, -20, 0, 30)
-    wbName.Position = UDim2.new(0, 16, 0, 20)
-    wbName.BackgroundTransparency = 1
-    wbName.Text = "Welcome to VexHub"
-    wbName.TextColor3 = C_TEXT
-    wbName.Font = Enum.Font.GothamBold
-    wbName.TextSize = 20
-    wbName.TextXAlignment = Enum.TextXAlignment.Left
-    wbName.Parent = card1
-
-    local wbUser = Instance.new("TextLabel")
-    wbUser.Size = UDim2.new(1, -20, 0, 20)
-    wbUser.Position = UDim2.new(0, 16, 0, 50)
-    wbUser.BackgroundTransparency = 1
-    wbUser.Text = "Prison Life Edition - Loaded Successfully"
-    wbUser.TextColor3 = C_MUTED
-    wbUser.Font = Enum.Font.GothamMedium
-    wbUser.TextSize = 13
-    wbUser.TextXAlignment = Enum.TextXAlignment.Left
-    wbUser.Parent = card1
-end
-
 local function buildSettingsTab()
     local sf = makeScrollingFrame()
 
     createToggle(sf, "Notifications", notifEnabled, function(v) notifEnabled = v end)
+
+    createSlider(sf, "Notif Duration", 1, 10, notifDuration, function(v) notifDuration = v end)
 
     createButton(sf, "Unload UI", function()
         getgenv().VexHub_Loaded = false
@@ -683,7 +959,7 @@ registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
 
-selectTab("Main")
+selectTab("Home")
 
 -- Window Dragging
 local dragging, dragStart, startPos
@@ -708,8 +984,37 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- UI Toggle Toggle
+-- Visibility
 local uiVisible = true
+local isAnimating = false
+
+local function setUIVisible(state)
+    if isAnimating then return end
+    isAnimating = true
+    uiVisible = state
+
+    if uiVisible then
+        MainFrame.Visible = true
+        local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 780, 0, 420),
+            BackgroundTransparency = 0.1
+        })
+        tw:Play()
+        tw.Completed:Connect(function() isAnimating = false end)
+    else
+        local tw = TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 780, 0, 0),
+            BackgroundTransparency = 1
+        })
+        tw:Play()
+        tw.Completed:Connect(function()
+            if not uiVisible then MainFrame.Visible = false end
+            isAnimating = false
+        end)
+    end
+end
+
+-- Floating Toggle Button
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
@@ -724,20 +1029,19 @@ FloatingBtn.Parent = ScreenGui
 createCorner(FloatingBtn, 20)
 
 FloatingBtn.MouseButton1Click:Connect(function()
-    uiVisible = not uiVisible
-    MainFrame.Visible = uiVisible
+    setUIVisible(not uiVisible)
 end)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
-        uiVisible = not uiVisible
-        MainFrame.Visible = uiVisible
+        setUIVisible(not uiVisible)
     end
 end)
 
--- Wall Check
+-- Helper: Wall Check Function
 local function isTargetVisible(targetPart)
     if not FeatureState.WallCheck then return true end
+    
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, Camera}
@@ -753,39 +1057,13 @@ local function isTargetVisible(targetPart)
     return true
 end
 
--- Fast Punch Logic
-local mainRemotes = ReplicatedStorage:FindFirstChild("meleeEvent")
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if not gpe and FeatureState.FastPunch and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        if mainRemotes then
-            mainRemotes:FireServer(LocalPlayer)
-        end
-    end
-end)
-
--- NOCLIP LOOP (Работает 100%)
-RunService.Stepped:Connect(function()
-    if FeatureState.Noclip and LocalPlayer.Character then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide == true then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
--- MAIN CORE LOOP (Aimbot, ESP, Speed)
+-- Main Execution Loop
 RunService.RenderStepped:Connect(function()
-    -- FOV Circle
+    -- Lock FOV Circle to Center Screen
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
-    -- Speed Boost
-    if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 26
-    end
-
-    -- AIMBOT LOGIC
+    -- Aimbot Logic
     if FeatureState.AimEnabled then
         local closestPlayer = nil
         local shortestDistance = FeatureState.FovRadius
@@ -793,19 +1071,15 @@ RunService.RenderStepped:Connect(function()
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                 
-                local teamName = tostring(plr.Team)
-                local canTarget = false
-
-                if teamName == "Criminals" and FeatureState.TargetCriminals then canTarget = true end
-                if teamName == "Guards" and FeatureState.TargetGuards then canTarget = true end
-                if teamName == "Inmates" and FeatureState.TargetInmates then canTarget = true end
-
-                if canTarget then
+                local isTeammate = FeatureState.TeamCheck and (plr.Team == LocalPlayer.Team)
+                
+                if not isTeammate then
                     local head = plr.Character.Head
                     local headPos, onScreen = Camera:WorldToViewportPoint(head.Position)
                     
                     if onScreen then
                         local dist = (Vector2.new(headPos.X, headPos.Y) - centerScreen).Magnitude
+                        
                         if dist < shortestDistance and isTargetVisible(head) then
                             shortestDistance = dist
                             closestPlayer = plr
@@ -820,7 +1094,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ESP LOGIC
+    -- ESP Logic
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             local highlight = plr.Character:FindFirstChild("VexESP")
@@ -848,19 +1122,27 @@ RunService.RenderStepped:Connect(function()
             end
         end
     end
+
+    -- Noclip Logic
+    if FeatureState.Noclip and LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
 end)
 
--- INF STAMINA HOOK
-local rawmt = getrawmetatable(game)
-local oldIndex = rawmt.__index
-setreadonly(rawmt, false)
-
-rawmt.__index = newcclosure(function(self, idx)
+-- Inf Stamina
+local mt = getrawmetatable(game)
+local oldIndex = mt.__index
+setreadonly(mt, false)
+mt.__index = newcclosure(function(self, idx)
     if FeatureState.InfStamina and tostring(idx) == "Stamina" then
         return 100
     end
     return oldIndex(self, idx)
 end)
-setreadonly(rawmt, true)
+setreadonly(mt, true)
 
-notify("VexHub", "Загружено успешно! Были внесены исправления.")
+notify("VexHub", "Successfully loaded. Press RightShift to toggle")
