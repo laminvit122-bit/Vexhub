@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Full Edition)
+    VexHub - Prison Life Edition
 --]]
 
 if game.PlaceId ~= 155615604 then
@@ -26,7 +26,7 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Translations Dictionary
+-- Translations
 local CurrentLang = "RU"
 local Translations = {
     RU = {
@@ -35,9 +35,9 @@ local Translations = {
         Visuals = "Визуалы",
         Settings = "Настройки",
         AimEnabled = "Aimbot",
-        TargetCriminals = "Цель: Преступники (Красные)",
-        TargetGuards = "Цель: Охрана (Синие)",
-        TargetInmates = "Цель: Заключенные (Оранжевые)",
+        TargetCriminals = "Цель: Преступники",
+        TargetGuards = "Цель: Охрана",
+        TargetInmates = "Цель: Заключенные",
         WallCheck = "Проверка стен",
         FovRadius = "Радиус FOV",
         InfStamina = "Бесконечная выносливость",
@@ -82,9 +82,9 @@ local Translations = {
         Visuals = "Visuals",
         Settings = "Settings",
         AimEnabled = "Aimbot",
-        TargetCriminals = "Target: Criminals (Red)",
-        TargetGuards = "Target: Guards (Blue)",
-        TargetInmates = "Target: Inmates (Orange)",
+        TargetCriminals = "Target: Criminals",
+        TargetGuards = "Target: Guards",
+        TargetInmates = "Target: Inmates",
         WallCheck = "Wall Check",
         FovRadius = "FOV Radius",
         InfStamina = "Infinite Stamina",
@@ -122,53 +122,6 @@ local Translations = {
         TT_ServerHop = "Searches for and joins a different active server.",
         TT_SaveConfig = "Saves current feature configuration.",
         TT_LoadConfig = "Loads saved feature settings."
-    },
-    AR = {
-        Home = "الرئيسية",
-        Main = "الرئيسي",
-        Visuals = "البصريات",
-        Settings = "الإعدادات",
-        AimEnabled = "التصويب التلقائي",
-        TargetCriminals = "الهدف: المجرمين (أحمر)",
-        TargetGuards = "الهدف: الحراس (أزرق)",
-        TargetInmates = "الهدف: السجناء (برتقالي)",
-        WallCheck = "فحص الجدران",
-        FovRadius = "نطاق FOV",
-        InfStamina = "لياقت بدنية غير محدودة",
-        SpeedHack = "تسريع الحركة",
-        SpeedHackVal = "سرعة المشي",
-        FastPunch = "لكم سريع",
-        Noclip = "اختراق الجدران",
-        EspEnabled = "كشف اللاعبين (ESP)",
-        Fullbright = "إضاءة الخريطة بالكامل",
-        AntiAFK = "منع الطرد لعدم النشاط",
-        ResetChar = "إعادة ضبط الشخصية",
-        Rejoin = "إعادة الانضمام",
-        ServerHop = "تغيير الخادم",
-        Notifications = "الإشعارات",
-        SaveConfig = "حفظ الإعدادات",
-        LoadConfig = "تحميل الإعدادات",
-        Language = "اللغة",
-        UnloadUI = "إغلاق السكريبت",
-        -- Tooltips
-        TT_AimEnabled = "يصوب تلقائياً على اللاعبين داخل دائرة الرؤية.",
-        TT_TargetCriminals = "السماح بالتصويب على فريق المجرمين.",
-        TT_TargetGuards = "السماح بالتصويب على فريق الحراس.",
-        TT_TargetInmates = "السماح بالتصويب على فريق السجناء.",
-        TT_WallCheck = "عدم التصويب إذا كان الهدف خلف جدار.",
-        TT_FovRadius = "تعديل حجم دائرة التصويب.",
-        TT_InfStamina = "لا تنفذ طاقة الركض أبداً.",
-        TT_SpeedHack = "تفعيل سرعة حركة مخصصة.",
-        TT_SpeedHackVal = "تحديد قيمة سرعة الحركة.",
-        TT_FastPunch = "إزالة التأخير بين اللكمات.",
-        TT_Noclip = "يسمح بالمرور عبر الجدران.",
-        TT_EspEnabled = "إظهار اللاعبين عبر الجدران.",
-        TT_Fullbright = "جعل الخريطة مضاءة بالكامل بدون ظلام.",
-        TT_AntiAFK = "يمنع طردك عند التوقف عن اللعب.",
-        TT_Rejoin = "إعادة الدخول لنفس الخادم.",
-        TT_ServerHop = "البحث عن خادم آخر والانضمام إليه.",
-        TT_SaveConfig = "حفظ التكوين الحالي في ملف.",
-        TT_LoadConfig = "تحميل التكوين المحفوظ."
     }
 }
 
@@ -205,9 +158,8 @@ local C_TOGGLE_ON  = Color3.fromRGB(255, 255, 255)
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
-local C_FAINT      = Color3.fromRGB(90, 90, 90)
 
--- Container Setup
+-- UI Parent Setup
 local targetParent = CoreGui
 if gethui then targetParent = gethui() end
 
@@ -338,6 +290,18 @@ TooltipText.ZIndex = 101
 TooltipText.Parent = TooltipFrame
 
 local currentTooltipTween = nil
+
+local function hideTooltip()
+    if currentTooltipTween then currentTooltipTween:Cancel() end
+    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.15), {BackgroundTransparency = 1})
+    TweenService:Create(TooltipText, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+    currentTooltipTween.Completed:Connect(function()
+        if TooltipFrame.BackgroundTransparency >= 0.9 then
+            TooltipFrame.Visible = false
+        end
+    end)
+end
+
 local function showTooltip(desc)
     if not desc or desc == "" then return end
     TooltipText.Text = desc
@@ -351,35 +315,22 @@ local function showTooltip(desc)
     currentTooltipTween:Play()
 end
 
-local function hideTooltip()
-    if currentTooltipTween then currentTooltipTween:Cancel() end
-    currentTooltipTween = TweenService:Create(TooltipFrame, TweenInfo.new(0.15), {BackgroundTransparency = 1})
-    TweenService:Create(TooltipText, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
-    currentTooltipTween.Completed:Connect(function()
-        if TooltipFrame.BackgroundTransparency >= 0.9 then
-            TooltipFrame.Visible = false
-        end
-    end)
-end
-
-UserInputService.InputChanged:Connect(function(input)
-    if TooltipFrame.Visible and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        TooltipFrame.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
-    end
-end)
-
+-- Привязка подсказок с защитой от показа при нажатии мимо/в пустоту
 local function bindTooltip(guiObject, tooltipKey)
     local isPressing = false
+
     guiObject.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isPressing = true
-            task.delay(0.3, function()
+            task.delay(0.25, function()
+                -- Показываем подсказку только если нажатие все еще удержано именно на элементе
                 if isPressing then
                     showTooltip(tr(tooltipKey))
                 end
             end)
         end
     end)
+
     guiObject.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isPressing = false
@@ -387,6 +338,21 @@ local function bindTooltip(guiObject, tooltipKey)
         end
     end)
 end
+
+-- Закрывать подсказку при клике в любую пустую область экрана
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if not gameProcessed then
+            hideTooltip()
+        end
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if TooltipFrame.Visible and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        TooltipFrame.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
+    end
+end)
 
 -- Main Window
 local MainFrame = Instance.new("Frame")
@@ -485,7 +451,7 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- Helper UI Builders
+-- UI Builders
 local function clearContent()
     for _, child in ipairs(Content:GetChildren()) do
         if child.Name ~= "ContentTop" and child.Name ~= "Footer" then
@@ -669,7 +635,7 @@ local function createButton(parent, titleKey, callback)
     return btn
 end
 
--- Tab Management
+-- Tabs Manager
 local currentTab = "Home"
 local tabs = {}
 
@@ -729,7 +695,7 @@ local function registerTab(name, iconAsset, labelKey, buildFunc, order)
     }
 end
 
--- TAB BUILDERS
+-- Tab Content Builders
 local function buildHomeTab()
     local sf = makeScrollingFrame()
 
@@ -762,13 +728,12 @@ local function buildHomeTab()
     wbUser.TextXAlignment = Enum.TextXAlignment.Left
     wbUser.Parent = card1
 
-    -- Server Controls
     createButton(sf, "Rejoin", function()
         TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end)
 
     createButton(sf, "ServerHop", function()
-        notify("Server Hop", "Searching for available servers...")
+        notify("Server Hop", "Поиск доступного сервера...")
         task.spawn(function()
             local servers = {}
             local req = request or http_request or (syn and syn.request)
@@ -786,7 +751,7 @@ local function buildHomeTab()
             if #servers > 0 then
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
             else
-                notify("Server Hop", "No other servers found!")
+                notify("Server Hop", "Других серверов не найдено.")
             end
         end)
     end)
@@ -811,7 +776,6 @@ local function buildMainTab()
     end)
 
     createToggle(sf, "InfStamina", FeatureState.InfStamina, function(v) FeatureState.InfStamina = v end)
-    
     createToggle(sf, "SpeedHack", FeatureState.SpeedHack, function(v) FeatureState.SpeedHack = v end)
     createSlider(sf, "SpeedHackVal", 16, 150, FeatureState.SpeedHackValue, function(v) FeatureState.SpeedHackValue = v end)
 
@@ -832,7 +796,6 @@ local function buildSettingsTab()
     createToggle(sf, "Notifications", notifEnabled, function(v) notifEnabled = v end)
     createToggle(sf, "AntiAFK", FeatureState.AntiAFK, function(v) FeatureState.AntiAFK = v end)
 
-    -- Language Switcher
     local langCard = Instance.new("Frame")
     langCard.Size = UDim2.new(1, 0, 0, 56)
     langCard.BackgroundColor3 = C_CARD
@@ -853,7 +816,7 @@ local function buildSettingsTab()
 
     local function makeLangBtn(text, langCode, posX)
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, 50, 0, 28)
+        btn.Size = UDim2.new(0, 60, 0, 28)
         btn.Position = UDim2.new(1, posX, 0.5, -14)
         btn.BackgroundColor3 = (CurrentLang == langCode) and C_ACCENT or C_SIDEBAR
         btn.Text = text
@@ -872,15 +835,13 @@ local function buildSettingsTab()
         end)
     end
 
-    makeLangBtn("RU", "RU", -170)
-    makeLangBtn("EN", "EN", -110)
-    makeLangBtn("AR", "AR", -50)
+    makeLangBtn("RU", "RU", -135)
+    makeLangBtn("EN", "EN", -65)
 
-    -- Config System
     createButton(sf, "SaveConfig", function()
         if writefile then
             writefile("VexHub_Config.json", HttpService:JSONEncode(FeatureState))
-            notify("Config", "Configuration saved successfully!")
+            notify("Config", "Настройки сохранены!")
         end
     end)
 
@@ -890,7 +851,7 @@ local function buildSettingsTab()
             if data then
                 for k, v in pairs(data) do FeatureState[k] = v end
                 selectTab(currentTab)
-                notify("Config", "Configuration loaded successfully!")
+                notify("Config", "Настройки загружены!")
             end
         end
     end)
@@ -902,7 +863,7 @@ local function buildSettingsTab()
     end)
 end
 
--- Register Tabs
+-- Register Navigation Tabs
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Visuals", "rbxassetid://17412298151", "Visuals", buildVisualsTab, 3)
@@ -960,7 +921,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Wall Check Logic
+-- Raycast Target Check
 local function isTargetVisible(targetPart)
     if not FeatureState.WallCheck then return true end
     local raycastParams = RaycastParams.new()
@@ -988,13 +949,17 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Fullbright Store
-local origBrightness = Lighting.Brightness
-local origClockTime = Lighting.ClockTime
-local origGlobalShadows = Lighting.GlobalShadows
-local origFogEnd = Lighting.FogEnd
+-- Anti-AFK
+local VirtualUser = game:GetService("VirtualUser")
+LocalPlayer.Idled:Connect(function()
+    if FeatureState.AntiAFK then
+        VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+    end
+end)
 
--- NOCLIP LOOP
+-- Noclip Execution Loop
 RunService.Stepped:Connect(function()
     if FeatureState.Noclip and LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -1005,9 +970,8 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- MAIN RENDER LOOP
+-- Main Render Loop
 RunService.RenderStepped:Connect(function()
-    -- FOV Circle
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
@@ -1024,7 +988,7 @@ RunService.RenderStepped:Connect(function()
         Lighting.FogEnd = 100000
     end
 
-    -- AIMBOT LOGIC
+    -- AIMBOT Logic
     if FeatureState.AimEnabled then
         local closestPlayer = nil
         local shortestDistance = FeatureState.FovRadius
@@ -1059,7 +1023,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ESP LOGIC
+    -- ESP Logic
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             local highlight = plr.Character:FindFirstChild("VexESP")
@@ -1089,7 +1053,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Infinite Stamina Meta Hook
+-- Metatable Hooking for Infinite Stamina
 local rawmt = getrawmetatable(game)
 local oldIndex = rawmt.__index
 setreadonly(rawmt, false)
@@ -1102,4 +1066,4 @@ rawmt.__index = newcclosure(function(self, idx)
 end)
 setreadonly(rawmt, true)
 
-notify("VexHub", "Successfully loaded with all requested updates!")
+notify("VexHub", "Скрипт успешно загружен!")
