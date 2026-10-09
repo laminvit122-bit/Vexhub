@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Expanded Version)
+    VexHub - Prison Life Edition (Bypass & Anti-Kick Fix)
     Created by DevScripts
 --]]
 
@@ -41,7 +41,7 @@ local C_MUTED      = Color3.fromRGB(138, 138, 138)
 local C_FAINT      = Color3.fromRGB(90, 90, 90)
 local C_GREEN      = Color3.fromRGB(34, 197, 94)
 
--- Feature Settings
+-- Feature Settings (Safe Values to avoid Anti-Cheat detection)
 local FeatureState = {
     AimEnabled = false,
     FovRadius = 100,
@@ -50,7 +50,7 @@ local FeatureState = {
     EspEnabled = false,
     InfStamina = true,
     SpeedBoost = false,
-    WalkSpeedVal = 25,
+    WalkSpeedVal = 24, -- Безопасное значение (все что выше 32-35 кикает)
     Noclip = false,
     FastPunch = false,
     GodMode = false,
@@ -78,7 +78,7 @@ local function createCorner(parent, radius)
     return corner
 end
 
--- FOV Circle (Fixed in Center)
+-- FOV Circle
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = C_ACCENT
 FovCircle.Thickness = 1.5
@@ -87,7 +87,7 @@ FovCircle.Radius = FeatureState.FovRadius
 FovCircle.Filled = false
 FovCircle.Visible = false
 
--- Notifications (Bottom Right Position)
+-- Notifications
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
 NotifContainer.Size = UDim2.new(0, 340, 0, 180)
@@ -136,7 +136,8 @@ local function notify(title, msg)
     tLabel.Parent = card
 
     local mLabel = Instance.new("TextLabel")
-    mLabel.Size = UDim2.new(1, -20, 0, 18) mLabel.Position = UDim2.new(0, 12, 0, 28)
+    mLabel.Size = UDim2.new(1, -20, 0, 18)
+    mLabel.Position = UDim2.new(0, 12, 0, 28)
     mLabel.BackgroundTransparency = 1
     mLabel.Font = Enum.Font.GothamMedium
     mLabel.TextSize = 12
@@ -193,14 +194,11 @@ SideHeader.Size = UDim2.new(1, 0, 0, 60)
 SideHeader.BackgroundTransparency = 1
 SideHeader.Parent = Sidebar
 
-local LogoIcon = Instance.new("TextLabel")
+local LogoIcon = Instance.new("ImageLabel")
 LogoIcon.Size = UDim2.new(0, 24, 0, 24)
-LogoIcon.Position = UDim2.new(0, 16, 0, 18)
+LogoIcon.Position = UDim2.new(0, 14, 0, 18)
 LogoIcon.BackgroundTransparency = 1
-LogoIcon.Text = "⬢"
-LogoIcon.TextColor3 = C_ACCENT
-LogoIcon.TextSize = 18
-LogoIcon.Font = Enum.Font.GothamBold
+LogoIcon.Image = "rbxassetid://122881985117031"
 LogoIcon.Parent = SideHeader
 
 local LogoTitle = Instance.new("TextLabel")
@@ -314,7 +312,7 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- Search Bar Logic
+-- Search Bar
 local SearchBar = Instance.new("Frame")
 SearchBar.Size = UDim2.new(0, 180, 0, 32)
 SearchBar.Position = UDim2.new(1, -195, 0, 14)
@@ -412,7 +410,6 @@ local function makeScrollingFrame()
     return sf
 end
 
--- Filter UI Search elements
 SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
     local filter = SearchInput.Text:lower()
     local activeSF = Content:FindFirstChild("TabScroll")
@@ -691,22 +688,37 @@ local function serverHop(lowest)
     end
 end
 
--- Item Spawner Logic
-local function getGameItem(itemName)
-    local itemGiver = Workspace:FindFirstChild(itemName, true) or ReplicatedStorage:FindFirstChild(itemName, true)
-    if itemGiver then
-        if itemGiver:FindFirstChild("ITEMPICKUP") then
-            Workspace.Remote.ItemHandler:InvokeServer(itemGiver.ITEMPICKUP)
-            notify("Item Spawner", "Получен предмет: " .. itemName)
-        else
-            -- Alternate Give Item
-            local item = itemGiver:Clone()
-            item.Parent = LocalPlayer.Backpack
-            notify("Item Spawner", "Выдан предмет: " .. itemName)
+-- БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ОРУЖИЯ (БЕЗ ТЕЛЕПОРТА И КИКА)
+local function getRealItem(itemName)
+    task.spawn(function()
+        local giver = Workspace:FindFirstChild(itemName, true) or ReplicatedStorage:FindFirstChild(itemName, true)
+        
+        -- Попытка вызвать RemoteEvent напрямую без смещения персонажа
+        if Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler") then
+            if giver and giver:FindFirstChild("ITEMPICKUP") then
+                Workspace.Remote.ItemHandler:InvokeServer(giver.ITEMPICKUP)
+                notify("Item Spawner", "Выдано оружие: " .. itemName)
+                return
+            end
         end
-    else
-        notify("Item Spawner", "Предмет " .. itemName .. " не найден.")
-    end
+
+        -- Безопасная дистанционная обработка TouchInterest без детекта
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp and giver then
+            local targetPart = giver:IsA("BasePart") and giver or giver:FindFirstChildOfClass("BasePart")
+            if targetPart then
+                firetouchinterest(hrp, targetPart, 0)
+                task.wait(0.05)
+                firetouchinterest(hrp, targetPart, 1)
+                notify("Item Spawner", "Выдано оружие: " .. itemName)
+            else
+                notify("Item Spawner", "Ошибка подбора: " .. itemName)
+            end
+        else
+            notify("Item Spawner", "Предмет " .. itemName .. " не найден.")
+        end
+    end)
 end
 
 -- TAB BUILDERS
@@ -991,10 +1003,10 @@ local function buildMainTab()
         end
     end)
 
-    createSlider(sf, "Speed Multiplier", 16, 120, FeatureState.WalkSpeedVal, function(v)
-        FeatureState.WalkSpeedVal = v
+    createSlider(sf, "Speed Multiplier", 16, 35, FeatureState.WalkSpeedVal, function(v)
+        FeatureState.WalkSpeedVal = math.clamp(v, 16, 35) -- Безопасное значение против кика
         if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = v
+            LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
         end
     end)
 
@@ -1032,44 +1044,13 @@ end
 local function buildItemsTab()
     local sf = makeScrollingFrame()
 
-    createButton(sf, "Get M4A1 Rifle", function() getGameItem("M4A1") end)
-    createButton(sf, "Get Remington 870", function() getGameItem("Remington 870") end)
-    createButton(sf, "Get AK-47", function() getGameItem("AK-47") end)
-    createButton(sf, "Get M9 Pistol", function() getGameItem("M9") end)
-    createButton(sf, "Get Taser", function() getGameItem("Taser") end)
-    createButton(sf, "Get Riot Shield", function() getGameItem("Riot Shield") end)
-    createButton(sf, "Get Keycard", function() getGameItem("Keycard") end)
-end
-
-local function buildTeleportsTab()
-    local sf = makeScrollingFrame()
-
-    local function tpTo(cframe)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = cframe
-            notify("Teleport", "Мгновенное перемещение выполнено")
-        end
-    end
-
-    createButton(sf, "Prison Yard (Двор)", function()
-        tpTo(CFrame.new(779, 98, 2458))
-    end)
-
-    createButton(sf, "Guard Room (Оружейная)", function()
-        tpTo(CFrame.new(835, 100, 2270))
-    end)
-
-    createButton(sf, "Criminal Base (База бандитов)", function()
-        tpTo(CFrame.new(-943, 94, 2063))
-    end)
-
-    createButton(sf, "Cell Block (Камеры)", function()
-        tpTo(CFrame.new(918, 100, 2380))
-    end)
-
-    createButton(sf, "Neutral Zone (Кафетерий)", function()
-        tpTo(CFrame.new(960, 100, 2320))
-    end)
+    createButton(sf, "Get M4A1 Rifle", function() getRealItem("M4A1") end)
+    createButton(sf, "Get Remington 870", function() getRealItem("Remington 870") end)
+    createButton(sf, "Get AK-47", function() getRealItem("AK-47") end)
+    createButton(sf, "Get M9 Pistol", function() getRealItem("M9") end)
+    createButton(sf, "Get Taser", function() getRealItem("Taser") end)
+    createButton(sf, "Get Riot Shield", function() getRealItem("Riot Shield") end)
+    createButton(sf, "Get Keycard", function() getRealItem("Keycard") end)
 end
 
 local function buildSettingsTab()
@@ -1090,9 +1071,8 @@ end
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
-registerTab("Items", "rbxassetid://11413123842", "Guns & Items", buildItemsTab, 4)
-registerTab("Teleports", "rbxassetid://11413101188", "Teleports", buildTeleportsTab, 5)
-registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 6)
+registerTab("Items", "rbxassetid://122881985117031", "Guns & Items", buildItemsTab, 4)
+registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 5)
 
 selectTab("Home")
 
@@ -1192,7 +1172,7 @@ local function isTargetVisible(targetPart)
     return true
 end
 
--- Fast Punch Logic Event Listener
+-- Fast Punch Event Listener
 UserInputService.InputBegan:Connect(function(input, gpe)
     if not gpe and input.UserInputType == Enum.UserInputType.MouseButton1 and FeatureState.FastPunch then
         local char = LocalPlayer.Character
@@ -1216,13 +1196,17 @@ end)
 
 -- Main Execution Loop
 RunService.RenderStepped:Connect(function()
-    -- Lock FOV Circle to Center Screen
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
     -- God Mode Logic
     if FeatureState.GodMode and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.Health = 100
+    end
+
+    -- Safe Walkspeed check loop
+    if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
     end
 
     -- Aimbot Logic
@@ -1295,14 +1279,12 @@ RunService.RenderStepped:Connect(function()
                 local dist = (targetPos - myPos).Magnitude
 
                 if dist <= FeatureState.AuraRange then
-                    -- Kill Aura
                     if FeatureState.KillAura and plr.Team ~= LocalPlayer.Team then
                         pcall(function()
                             Workspace.Remote.meleeEvent:FireServer(plr)
                         end)
                     end
 
-                    -- Arrest Aura
                     if FeatureState.ArrestAura and tostring(LocalPlayer.Team) == "Guards" and tostring(plr.Team) == "Criminals" then
                         pcall(function()
                             Workspace.Remote.arrest:InvokeServer(plr.Character.HumanoidRootPart)
@@ -1313,7 +1295,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Noclip Logic
+    -- Noclip Logic (с защитой от сброса античитом)
     if FeatureState.Noclip and LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
