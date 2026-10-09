@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition
+    VexHub - Prison Life Edition (Expanded Version)
     Created by DevScripts
 --]]
 
@@ -20,6 +20,9 @@ local Stats = game:GetService("Stats")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -45,12 +48,16 @@ local FeatureState = {
     TeamCheck = true,
     WallCheck = true,
     EspEnabled = false,
-    InfStamina = false,
+    InfStamina = true,
     SpeedBoost = false,
+    WalkSpeedVal = 25,
     Noclip = false,
     FastPunch = false,
     GodMode = false,
-    AntiAFK = true
+    AntiAFK = true,
+    KillAura = false,
+    ArrestAura = false,
+    AuraRange = 15
 }
 
 -- Container
@@ -102,7 +109,7 @@ local function notify(title, msg)
 
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 56)
-    card.Position = UDim2.new(1, 100, 0, 0) -- Старт за пределами экрана
+    card.Position = UDim2.new(1, 100, 0, 0)
     card.BackgroundColor3 = C_CARD
     card.BackgroundTransparency = 1
     card.ClipsDescendants = true
@@ -129,8 +136,7 @@ local function notify(title, msg)
     tLabel.Parent = card
 
     local mLabel = Instance.new("TextLabel")
-    mLabel.Size = UDim2.new(1, -20, 0, 18)
-    mLabel.Position = UDim2.new(0, 12, 0, 28)
+    mLabel.Size = UDim2.new(1, -20, 0, 18) mLabel.Position = UDim2.new(0, 12, 0, 28)
     mLabel.BackgroundTransparency = 1
     mLabel.Font = Enum.Font.GothamMedium
     mLabel.TextSize = 12
@@ -140,14 +146,12 @@ local function notify(title, msg)
     mLabel.Text = msg
     mLabel.Parent = card
 
-    -- Плавное появление (Slide in + Fade in)
     local tweenInfoIn = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     TweenService:Create(card, tweenInfoIn, {BackgroundTransparency = 0.15, Position = UDim2.new(0, 0, 0, 0)}):Play()
     TweenService:Create(bar, tweenInfoIn, {BackgroundTransparency = 0}):Play()
     TweenService:Create(tLabel, tweenInfoIn, {TextTransparency = 0}):Play()
     TweenService:Create(mLabel, tweenInfoIn, {TextTransparency = 0}):Play()
 
-    -- Плавное исчезновение (Fade out + Slide out)
     task.delay(notifDuration, function()
         if card and card.Parent then
             local tweenInfoOut = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
@@ -198,14 +202,6 @@ LogoIcon.TextColor3 = C_ACCENT
 LogoIcon.TextSize = 18
 LogoIcon.Font = Enum.Font.GothamBold
 LogoIcon.Parent = SideHeader
-
--- Текстура рядом с VexHub
-local LogoTexture = Instance.new("ImageLabel")
-LogoTexture.Size = UDim2.new(0, 20, 0, 20)
-LogoTexture.Position = UDim2.new(1, -36, 0, 20)
-LogoTexture.BackgroundTransparency = 1
-LogoTexture.Image = "rbxassetid://92044950923835"
-LogoTexture.Parent = SideHeader
 
 local LogoTitle = Instance.new("TextLabel")
 LogoTitle.Size = UDim2.new(1, -50, 0, 16)
@@ -318,7 +314,7 @@ TabTitleHeader.TextSize = 18
 TabTitleHeader.TextXAlignment = Enum.TextXAlignment.Left
 TabTitleHeader.Parent = ContentTop
 
--- Search Bar
+-- Search Bar Logic
 local SearchBar = Instance.new("Frame")
 SearchBar.Size = UDim2.new(0, 180, 0, 32)
 SearchBar.Position = UDim2.new(1, -195, 0, 14)
@@ -415,6 +411,29 @@ local function makeScrollingFrame()
     end)
     return sf
 end
+
+-- Filter UI Search elements
+SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local filter = SearchInput.Text:lower()
+    local activeSF = Content:FindFirstChild("TabScroll")
+    if activeSF then
+        for _, elem in ipairs(activeSF:GetChildren()) do
+            if elem:IsA("GuiObject") and not elem:IsA("UIListLayout") then
+                local txt = ""
+                for _, sub in ipairs(elem:GetDescendants()) do
+                    if sub:IsA("TextLabel") and sub.Text ~= "" then
+                        txt = txt .. " " .. sub.Text:lower()
+                    end
+                end
+                if filter == "" or string.find(txt, filter) then
+                    elem.Visible = true
+                else
+                    elem.Visible = false
+                end
+            end
+        end
+    end
+end)
 
 -- Controls Builder
 local function createToggle(parent, title, defaultState, callback)
@@ -647,6 +666,49 @@ end
 
 local startTime = tick()
 
+-- Server Hop Helpers
+local function serverHop(lowest)
+    local servers = {}
+    local req = request or http_request or (syn and syn.request)
+    if req then
+        local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. (lowest and "Asc" or "Desc") .. "&limit=100"
+        local res = req({Url = url, Method = "GET"})
+        if res and res.Body then
+            local data = HttpService:JSONDecode(res.Body)
+            if data and data.data then
+                for _, s in ipairs(data.data) do
+                    if type(s) == "table" and s.id ~= game.JobId and s.playing < s.maxPlayers then
+                        table.insert(servers, s.id)
+                    end
+                end
+            end
+        end
+    end
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+    else
+        notify("Server Hop", "Не удалось найти подходящий сервер.")
+    end
+end
+
+-- Item Spawner Logic
+local function getGameItem(itemName)
+    local itemGiver = Workspace:FindFirstChild(itemName, true) or ReplicatedStorage:FindFirstChild(itemName, true)
+    if itemGiver then
+        if itemGiver:FindFirstChild("ITEMPICKUP") then
+            Workspace.Remote.ItemHandler:InvokeServer(itemGiver.ITEMPICKUP)
+            notify("Item Spawner", "Получен предмет: " .. itemName)
+        else
+            -- Alternate Give Item
+            local item = itemGiver:Clone()
+            item.Parent = LocalPlayer.Backpack
+            notify("Item Spawner", "Выдан предмет: " .. itemName)
+        end
+    else
+        notify("Item Spawner", "Предмет " .. itemName .. " не найден.")
+    end
+end
+
 -- TAB BUILDERS
 local function buildHomeTab()
     local sf = makeScrollingFrame()
@@ -877,8 +939,8 @@ local function buildHomeTab()
     end
 
     makeRowBtn("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
-    makeRowBtn("Hop", function() notify("Server Hop", "Searching for another server...") end)
-    makeRowBtn("Lowest", function() notify("Server Hop", "Searching for lowest populated server...") end)
+    makeRowBtn("Hop", function() serverHop(false) end)
+    makeRowBtn("Lowest", function() serverHop(true) end)
     makeRowBtn("Job ID", function()
         setclipboard(game.JobId)
         notify("Clipboard", "Job ID copied to clipboard")
@@ -906,6 +968,18 @@ local function buildMainTab()
         FovCircle.Radius = v
     end)
 
+    createToggle(sf, "Kill Aura (Hit Enemies)", FeatureState.KillAura, function(v)
+        FeatureState.KillAura = v
+    end)
+
+    createToggle(sf, "Arrest Aura (Cop Only)", FeatureState.ArrestAura, function(v)
+        FeatureState.ArrestAura = v
+    end)
+
+    createSlider(sf, "Aura Range", 5, 30, FeatureState.AuraRange, function(v)
+        FeatureState.AuraRange = v
+    end)
+
     createToggle(sf, "Inf Stamina", FeatureState.InfStamina, function(v)
         FeatureState.InfStamina = v
     end)
@@ -913,7 +987,14 @@ local function buildMainTab()
     createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
         FeatureState.SpeedBoost = v
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = v and 25 or 16
+            LocalPlayer.Character.Humanoid.WalkSpeed = v and FeatureState.WalkSpeedVal or 16
+        end
+    end)
+
+    createSlider(sf, "Speed Multiplier", 16, 120, FeatureState.WalkSpeedVal, function(v)
+        FeatureState.WalkSpeedVal = v
+        if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = v
         end
     end)
 
@@ -948,6 +1029,49 @@ local function buildPlayerTab()
     end)
 end
 
+local function buildItemsTab()
+    local sf = makeScrollingFrame()
+
+    createButton(sf, "Get M4A1 Rifle", function() getGameItem("M4A1") end)
+    createButton(sf, "Get Remington 870", function() getGameItem("Remington 870") end)
+    createButton(sf, "Get AK-47", function() getGameItem("AK-47") end)
+    createButton(sf, "Get M9 Pistol", function() getGameItem("M9") end)
+    createButton(sf, "Get Taser", function() getGameItem("Taser") end)
+    createButton(sf, "Get Riot Shield", function() getGameItem("Riot Shield") end)
+    createButton(sf, "Get Keycard", function() getGameItem("Keycard") end)
+end
+
+local function buildTeleportsTab()
+    local sf = makeScrollingFrame()
+
+    local function tpTo(cframe)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = cframe
+            notify("Teleport", "Мгновенное перемещение выполнено")
+        end
+    end
+
+    createButton(sf, "Prison Yard (Двор)", function()
+        tpTo(CFrame.new(779, 98, 2458))
+    end)
+
+    createButton(sf, "Guard Room (Оружейная)", function()
+        tpTo(CFrame.new(835, 100, 2270))
+    end)
+
+    createButton(sf, "Criminal Base (База бандитов)", function()
+        tpTo(CFrame.new(-943, 94, 2063))
+    end)
+
+    createButton(sf, "Cell Block (Камеры)", function()
+        tpTo(CFrame.new(918, 100, 2380))
+    end)
+
+    createButton(sf, "Neutral Zone (Кафетерий)", function()
+        tpTo(CFrame.new(960, 100, 2320))
+    end)
+end
+
 local function buildSettingsTab()
     local sf = makeScrollingFrame()
 
@@ -966,7 +1090,9 @@ end
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
-registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 4)
+registerTab("Items", "rbxassetid://11413123842", "Guns & Items", buildItemsTab, 4)
+registerTab("Teleports", "rbxassetid://11413101188", "Teleports", buildTeleportsTab, 5)
+registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 6)
 
 selectTab("Home")
 
@@ -1066,11 +1192,38 @@ local function isTargetVisible(targetPart)
     return true
 end
 
+-- Fast Punch Logic Event Listener
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.UserInputType == Enum.UserInputType.MouseButton1 and FeatureState.FastPunch then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChildOfClass("Tool") and char:FindFirstChildOfClass("Tool").Name == "Melee" then
+            pcall(function()
+                ReplicatedStorage.Attribute:FireServer(string.rep(" ", 20))
+                Workspace.Remote.meleeEvent:FireServer(LocalPlayer)
+            end)
+        end
+    end
+end)
+
+-- Anti AFK
+LocalPlayer.Idled:Connect(function()
+    if FeatureState.AntiAFK then
+        VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+    end
+end)
+
 -- Main Execution Loop
 RunService.RenderStepped:Connect(function()
     -- Lock FOV Circle to Center Screen
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
+
+    -- God Mode Logic
+    if FeatureState.GodMode and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.Health = 100
+    end
 
     -- Aimbot Logic
     if FeatureState.AimEnabled then
@@ -1078,10 +1231,8 @@ RunService.RenderStepped:Connect(function()
         local shortestDistance = FeatureState.FovRadius
 
         for _, plr in ipairs(Players:GetPlayers()) do
-            -- Ignore Self
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                 
-                -- Team Check (Skip Team Mates)
                 local isTeammate = FeatureState.TeamCheck and (plr.Team == LocalPlayer.Team)
                 
                 if not isTeammate then
@@ -1091,7 +1242,6 @@ RunService.RenderStepped:Connect(function()
                     if onScreen then
                         local dist = (Vector2.new(headPos.X, headPos.Y) - centerScreen).Magnitude
                         
-                        -- Distance check + Wall check
                         if dist < shortestDistance and isTargetVisible(head) then
                             shortestDistance = dist
                             closestPlayer = plr
@@ -1109,11 +1259,11 @@ RunService.RenderStepped:Connect(function()
     -- ESP Logic
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
-            local highlight = plr.Character:FindFirstChild("VexEsp")
+            local highlight = plr.Character:FindFirstChild("VexESP")
             if FeatureState.EspEnabled then
                 if not highlight then
                     highlight = Instance.new("Highlight")
-                    highlight.Name = "VexEsp"
+                    highlight.Name = "VexESP"
                     highlight.FillTransparency = 0.5
                     highlight.OutlineTransparency = 0
                     highlight.Parent = plr.Character
@@ -1135,6 +1285,34 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
+    -- Kill Aura & Arrest Aura Loop
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+                local targetPos = plr.Character.HumanoidRootPart.Position
+                local dist = (targetPos - myPos).Magnitude
+
+                if dist <= FeatureState.AuraRange then
+                    -- Kill Aura
+                    if FeatureState.KillAura and plr.Team ~= LocalPlayer.Team then
+                        pcall(function()
+                            Workspace.Remote.meleeEvent:FireServer(plr)
+                        end)
+                    end
+
+                    -- Arrest Aura
+                    if FeatureState.ArrestAura and tostring(LocalPlayer.Team) == "Guards" and tostring(plr.Team) == "Criminals" then
+                        pcall(function()
+                            Workspace.Remote.arrest:InvokeServer(plr.Character.HumanoidRootPart)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+
     -- Noclip Logic
     if FeatureState.Noclip and LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -1145,7 +1323,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Inf Stamina
+-- Inf Stamina Meta-hook
 local mt = getrawmetatable(game)
 local oldIndex = mt.__index
 setreadonly(mt, false)
