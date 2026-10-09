@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Bypass & Anti-Kick Fix)
+    VexHub - Prison Life Edition (Full & Fixed)
     Created by DevScripts
 --]]
 
@@ -41,7 +41,7 @@ local C_MUTED      = Color3.fromRGB(138, 138, 138)
 local C_FAINT      = Color3.fromRGB(90, 90, 90)
 local C_GREEN      = Color3.fromRGB(34, 197, 94)
 
--- Feature Settings (Safe Values to avoid Anti-Cheat detection)
+-- Feature Settings
 local FeatureState = {
     AimEnabled = false,
     FovRadius = 100,
@@ -50,7 +50,7 @@ local FeatureState = {
     EspEnabled = false,
     InfStamina = true,
     SpeedBoost = false,
-    WalkSpeedVal = 24, -- Безопасное значение (все что выше 32-35 кикает)
+    WalkSpeedVal = 24,
     Noclip = false,
     FastPunch = false,
     GodMode = false,
@@ -665,58 +665,71 @@ local startTime = tick()
 
 -- Server Hop Helpers
 local function serverHop(lowest)
-    local servers = {}
-    local req = request or http_request or (syn and syn.request)
-    if req then
-        local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. (lowest and "Asc" or "Desc") .. "&limit=100"
-        local res = req({Url = url, Method = "GET"})
-        if res and res.Body then
+    notify("Server Hop", "Поиск сервера...")
+    task.spawn(function()
+        local req = (syn and syn.request) or (http and http.request) or http_request or request
+        if not req then
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+            return
+        end
+
+        local sortOrder = lowest and "Asc" or "Desc"
+        local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. sortOrder .. "&limit=100"
+        
+        local success, res = pcall(function()
+            return req({Url = url, Method = "GET"})
+        end)
+
+        if success and res and res.Body then
             local data = HttpService:JSONDecode(res.Body)
             if data and data.data then
+                local validServers = {}
                 for _, s in ipairs(data.data) do
-                    if type(s) == "table" and s.id ~= game.JobId and s.playing < s.maxPlayers then
-                        table.insert(servers, s.id)
+                    if type(s) == "table" and s.id ~= game.JobId and s.playing and s.playing < s.maxPlayers then
+                        table.insert(validServers, s.id)
                     end
+                end
+
+                if #validServers > 0 then
+                    local targetServer = validServers[math.random(1, #validServers)]
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer, LocalPlayer)
+                    return
                 end
             end
         end
-    end
-    if #servers > 0 then
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
-    else
-        notify("Server Hop", "Не удалось найти подходящий сервер.")
-    end
+        
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end)
 end
 
--- БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ОРУЖИЯ (БЕЗ ТЕЛЕПОРТА И КИКА)
+-- НАДЕЖНЫЙ ОБХОД ДЛЯ ПОЛУЧЕНИЯ ОРУЖИЯ В PRISON LIFE
 local function getRealItem(itemName)
     task.spawn(function()
-        local giver = Workspace:FindFirstChild(itemName, true) or ReplicatedStorage:FindFirstChild(itemName, true)
-        
-        -- Попытка вызвать RemoteEvent напрямую без смещения персонажа
-        if Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler") then
-            if giver and giver:FindFirstChild("ITEMPICKUP") then
-                Workspace.Remote.ItemHandler:InvokeServer(giver.ITEMPICKUP)
-                notify("Item Spawner", "Выдано оружие: " .. itemName)
-                return
-            end
-        end
+        local itemHandler = Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler")
+        local itemGiver = Workspace:FindFirstChild(itemName, true) 
+            or Workspace:FindFirstChild("Prison_Items", true)
+            or ReplicatedStorage:FindFirstChild(itemName, true)
 
-        -- Безопасная дистанционная обработка TouchInterest без детекта
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp and giver then
-            local targetPart = giver:IsA("BasePart") and giver or giver:FindFirstChildOfClass("BasePart")
-            if targetPart then
-                firetouchinterest(hrp, targetPart, 0)
-                task.wait(0.05)
-                firetouchinterest(hrp, targetPart, 1)
-                notify("Item Spawner", "Выдано оружие: " .. itemName)
-            else
-                notify("Item Spawner", "Ошибка подбора: " .. itemName)
+        if itemHandler then
+            -- Пробуем через перебор гейверов на карте
+            local found = false
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v.Name == itemName and (v:FindFirstChild("ITEMPICKUP") or v:IsA("Part") or v:IsA("Model")) then
+                    pcall(function()
+                        itemHandler:InvokeServer(v:FindFirstChild("ITEMPICKUP") or v)
+                    end)
+                    found = true
+                end
             end
+            
+            if not found and itemGiver then
+                pcall(function()
+                    itemHandler:InvokeServer(itemGiver:FindFirstChild("ITEMPICKUP") or itemGiver)
+                end)
+            end
+            notify("Item Spawner", "Запрос на получение: " .. itemName)
         else
-            notify("Item Spawner", "Предмет " .. itemName .. " не найден.")
+            notify("Item Spawner", "Ошибка: ItemHandler не найден")
         end
     end)
 end
@@ -878,7 +891,7 @@ local function buildHomeTab()
         end
     end)
 
-    -- Card 3: Game Info
+    -- Card 3: Game Info (Дизайн полностью сохранен)
     local card3 = Instance.new("Frame")
     card3.Size = UDim2.new(1, 0, 0, 130)
     card3.BackgroundColor3 = C_CARD
@@ -950,12 +963,24 @@ local function buildHomeTab()
         btn.MouseButton1Click:Connect(function() pcall(callback) end)
     end
 
-    makeRowBtn("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
-    makeRowBtn("Hop", function() serverHop(false) end)
-    makeRowBtn("Lowest", function() serverHop(true) end)
+    -- РАБОЧИЕ КНОПКИ HOME
+    makeRowBtn("Rejoin", function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end)
+    makeRowBtn("Hop", function()
+        serverHop(false)
+    end)
+    makeRowBtn("Lowest", function()
+        serverHop(true)
+    end)
     makeRowBtn("Job ID", function()
-        setclipboard(game.JobId)
-        notify("Clipboard", "Job ID copied to clipboard")
+        local clipFunc = setclipboard or toclipboard or (syn and syn.write_clipboard)
+        if clipFunc then
+            clipFunc(tostring(game.JobId))
+            notify("Clipboard", "Job ID скопирован в буфер!")
+        else
+            notify("Clipboard", "Не удалось скопировать Job ID")
+        end
     end)
 end
 
@@ -1004,7 +1029,7 @@ local function buildMainTab()
     end)
 
     createSlider(sf, "Speed Multiplier", 16, 35, FeatureState.WalkSpeedVal, function(v)
-        FeatureState.WalkSpeedVal = math.clamp(v, 16, 35) -- Безопасное значение против кика
+        FeatureState.WalkSpeedVal = math.clamp(v, 16, 35)
         if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
         end
@@ -1067,11 +1092,11 @@ local function buildSettingsTab()
     end)
 end
 
--- Register Tabs
+-- Register Tabs (С текстурой 17373505345 для Items)
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
-registerTab("Items", "rbxassetid://122881985117031", "Guns & Items", buildItemsTab, 4)
+registerTab("Items", "rbxassetid://17373505345", "Guns & Items", buildItemsTab, 4)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 5)
 
 selectTab("Home")
@@ -1204,7 +1229,7 @@ RunService.RenderStepped:Connect(function()
         LocalPlayer.Character.Humanoid.Health = 100
     end
 
-    -- Safe Walkspeed check loop
+    -- Walkspeed loop
     if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
     end
@@ -1295,7 +1320,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Noclip Logic (с защитой от сброса античитом)
+    -- Noclip Logic
     if FeatureState.Noclip and LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
