@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Full & Fixed)
+    VexHub - Prison Life Edition (Draggable Menu Button & Fixed)
     Created by DevScripts
 --]]
 
@@ -48,15 +48,12 @@ local FeatureState = {
     TeamCheck = true,
     WallCheck = true,
     EspEnabled = false,
-    InfStamina = true,
     SpeedBoost = false,
     WalkSpeedVal = 24,
     Noclip = false,
     FastPunch = false,
-    GodMode = false,
     AntiAFK = true,
     KillAura = false,
-    ArrestAura = false,
     AuraRange = 15
 }
 
@@ -78,7 +75,7 @@ local function createCorner(parent, radius)
     return corner
 end
 
--- FOV Circle
+-- FOV Circle (Обычный)
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = C_ACCENT
 FovCircle.Thickness = 1.5
@@ -663,7 +660,6 @@ end
 
 local startTime = tick()
 
--- Server Hop Helpers
 local function serverHop(lowest)
     notify("Server Hop", "Поиск сервера...")
     task.spawn(function()
@@ -702,34 +698,22 @@ local function serverHop(lowest)
     end)
 end
 
--- НАДЕЖНЫЙ ОБХОД ДЛЯ ПОЛУЧЕНИЯ ОРУЖИЯ В PRISON LIFE
+-- НАДЕЖНОЕ ПОЛУЧЕНИЕ ОРУЖИЯ
 local function getRealItem(itemName)
     task.spawn(function()
-        local itemHandler = Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler")
-        local itemGiver = Workspace:FindFirstChild(itemName, true) 
-            or Workspace:FindFirstChild("Prison_Items", true)
-            or ReplicatedStorage:FindFirstChild(itemName, true)
-
-        if itemHandler then
-            -- Пробуем через перебор гейверов на карте
-            local found = false
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v.Name == itemName and (v:FindFirstChild("ITEMPICKUP") or v:IsA("Part") or v:IsA("Model")) then
+        local remoteEvent = Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler")
+        if remoteEvent then
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj.Name == itemName then
+                    local pickup = obj:FindFirstChild("ITEMPICKUP") or obj
                     pcall(function()
-                        itemHandler:InvokeServer(v:FindFirstChild("ITEMPICKUP") or v)
+                        remoteEvent:InvokeServer(pickup)
                     end)
-                    found = true
                 end
             end
-            
-            if not found and itemGiver then
-                pcall(function()
-                    itemHandler:InvokeServer(itemGiver:FindFirstChild("ITEMPICKUP") or itemGiver)
-                end)
-            end
-            notify("Item Spawner", "Запрос на получение: " .. itemName)
+            notify("Item Spawner", "Получено: " .. itemName)
         else
-            notify("Item Spawner", "Ошибка: ItemHandler не найден")
+            notify("Item Spawner", "Не найден обработчик предметов")
         end
     end)
 end
@@ -738,7 +722,6 @@ end
 local function buildHomeTab()
     local sf = makeScrollingFrame()
 
-    -- Card 1: WELCOME
     local card1 = Instance.new("Frame")
     card1.Size = UDim2.new(1, 0, 0, 130)
     card1.BackgroundColor3 = C_CARD
@@ -794,7 +777,6 @@ local function buildHomeTab()
         if isReady then bigAvatar.Image = content end
     end)
 
-    -- Card 2: FPS/PING
     local card2 = Instance.new("Frame")
     card2.Size = UDim2.new(1, 0, 0, 130)
     card2.BackgroundColor3 = C_CARD
@@ -891,7 +873,6 @@ local function buildHomeTab()
         end
     end)
 
-    -- Card 3: Game Info (Дизайн полностью сохранен)
     local card3 = Instance.new("Frame")
     card3.Size = UDim2.new(1, 0, 0, 130)
     card3.BackgroundColor3 = C_CARD
@@ -963,7 +944,6 @@ local function buildHomeTab()
         btn.MouseButton1Click:Connect(function() pcall(callback) end)
     end
 
-    -- РАБОЧИЕ КНОПКИ HOME
     makeRowBtn("Rejoin", function()
         TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end)
@@ -1009,16 +989,8 @@ local function buildMainTab()
         FeatureState.KillAura = v
     end)
 
-    createToggle(sf, "Arrest Aura (Cop Only)", FeatureState.ArrestAura, function(v)
-        FeatureState.ArrestAura = v
-    end)
-
     createSlider(sf, "Aura Range", 5, 30, FeatureState.AuraRange, function(v)
         FeatureState.AuraRange = v
-    end)
-
-    createToggle(sf, "Inf Stamina", FeatureState.InfStamina, function(v)
-        FeatureState.InfStamina = v
     end)
 
     createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
@@ -1049,10 +1021,6 @@ local function buildPlayerTab()
 
     createToggle(sf, "ESP (Team Colors)", FeatureState.EspEnabled, function(v)
         FeatureState.EspEnabled = v
-    end)
-
-    createToggle(sf, "God Mode", FeatureState.GodMode, function(v)
-        FeatureState.GodMode = v
     end)
 
     createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
@@ -1092,7 +1060,7 @@ local function buildSettingsTab()
     end)
 end
 
--- Register Tabs (С текстурой 17373505345 для Items)
+-- Register Tabs
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
@@ -1154,7 +1122,7 @@ local function setUIVisible(state)
     end
 end
 
--- Floating Toggle Button
+-- Floating Toggle Button (Перетаскиваемая кнопка с тремя полосками)
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
@@ -1168,8 +1136,34 @@ FloatingBtn.TextSize = 20
 FloatingBtn.Parent = ScreenGui
 createCorner(FloatingBtn, 20)
 
+local floatDragging = false
+local floatDragStart, floatStartPos
+
+FloatingBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        floatDragging = true
+        floatDragStart = input.Position
+        floatStartPos = FloatingBtn.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if floatDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - floatDragStart
+        FloatingBtn.Position = UDim2.new(floatStartPos.X.Scale, floatStartPos.X.Offset + delta.X, floatStartPos.Y.Scale, floatStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        floatDragging = false
+    end
+end)
+
 FloatingBtn.MouseButton1Click:Connect(function()
-    setUIVisible(not uiVisible)
+    if not floatDragging then
+        setUIVisible(not uiVisible)
+    end
 end)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
@@ -1224,12 +1218,6 @@ RunService.RenderStepped:Connect(function()
     local centerScreen = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     FovCircle.Position = centerScreen
 
-    -- God Mode Logic
-    if FeatureState.GodMode and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.Health = 100
-    end
-
-    -- Walkspeed loop
     if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
     end
@@ -1294,7 +1282,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Kill Aura & Arrest Aura Loop
+    -- Kill Aura Loop
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local myPos = LocalPlayer.Character.HumanoidRootPart.Position
 
@@ -1307,12 +1295,6 @@ RunService.RenderStepped:Connect(function()
                     if FeatureState.KillAura and plr.Team ~= LocalPlayer.Team then
                         pcall(function()
                             Workspace.Remote.meleeEvent:FireServer(plr)
-                        end)
-                    end
-
-                    if FeatureState.ArrestAura and tostring(LocalPlayer.Team) == "Guards" and tostring(plr.Team) == "Criminals" then
-                        pcall(function()
-                            Workspace.Remote.arrest:InvokeServer(plr.Character.HumanoidRootPart)
                         end)
                     end
                 end
@@ -1329,17 +1311,5 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-
--- Inf Stamina Meta-hook
-local mt = getrawmetatable(game)
-local oldIndex = mt.__index
-setreadonly(mt, false)
-mt.__index = newcclosure(function(self, idx)
-    if FeatureState.InfStamina and tostring(idx) == "Stamina" then
-        return 100
-    end
-    return oldIndex(self, idx)
-end)
-setreadonly(mt, true)
 
 notify("VexHub", "Successfully loaded. Press RightShift to toggle")
