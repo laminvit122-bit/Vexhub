@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Green Toggles & Rainbow Weapon)
+    VexHub - Prison Life Edition (Fixed Floating Button Click & Drag)
     Created by DevScripts
 --]]
 
@@ -34,7 +34,7 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(34, 197, 94) -- Зеленый цвет при включении
+local C_TOGGLE_ON  = Color3.fromRGB(34, 197, 94)
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
@@ -430,7 +430,7 @@ SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Controls Builder (С зеленой подсветкой переключателей)
+-- Controls Builder
 local function createToggle(parent, title, defaultState, callback)
     local state = defaultState or false
 
@@ -1126,7 +1126,7 @@ local function setUIVisible(state)
     end
 end
 
--- Floating Toggle Button
+-- Floating Toggle Button (Fixed Drag & Click separation)
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
@@ -1142,10 +1142,12 @@ createCorner(FloatingBtn, 20)
 
 local floatDragging = false
 local floatDragStart, floatStartPos
+local hasMoved = false
 
 FloatingBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         floatDragging = true
+        hasMoved = false
         floatDragStart = input.Position
         floatStartPos = FloatingBtn.Position
     end
@@ -1154,19 +1156,19 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if floatDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - floatDragStart
+        if delta.Magnitude > 5 then
+            hasMoved = true
+        end
         FloatingBtn.Position = UDim2.new(floatStartPos.X.Scale, floatStartPos.X.Offset + delta.X, floatStartPos.Y.Scale, floatStartPos.Y.Offset + delta.Y)
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if floatDragging and not hasMoved then
+            setUIVisible(not uiVisible)
+        end
         floatDragging = false
-    end
-end)
-
-FloatingBtn.MouseButton1Click:Connect(function()
-    if not floatDragging then
-        setUIVisible(not uiVisible)
     end
 end)
 
