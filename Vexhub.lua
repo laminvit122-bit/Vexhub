@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Rainbow Weapon & Draggable Menu)
+    VexHub - Prison Life Edition (Green Toggles & Rainbow Weapon)
     Created by DevScripts
 --]]
 
@@ -34,7 +34,7 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(255, 255, 255)
+local C_TOGGLE_ON  = Color3.fromRGB(34, 197, 94) -- Зеленый цвет при включении
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
@@ -48,7 +48,7 @@ local FeatureState = {
     TeamCheck = true,
     WallCheck = true,
     EspEnabled = false,
-    RainbowWeapon = false, -- Новая функция переливов цвета оружия
+    RainbowWeapon = false,
     SpeedBoost = false,
     WalkSpeedVal = 24,
     Noclip = false,
@@ -430,7 +430,7 @@ SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Controls Builder
+-- Controls Builder (С зеленой подсветкой переключателей)
 local function createToggle(parent, title, defaultState, callback)
     local state = defaultState or false
 
@@ -699,7 +699,6 @@ local function serverHop(lowest)
     end)
 end
 
--- НАДЕЖНОЕ ПОЛУЧЕНИЕ ОРУЖИЯ
 local function getRealItem(itemName)
     task.spawn(function()
         local remoteEvent = Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler")
@@ -1024,7 +1023,6 @@ local function buildPlayerTab()
         FeatureState.EspEnabled = v
     end)
 
-    -- НОВАЯ ФУНКЦИЯ: РАДУЖНОЕ ОРУЖИЕ В ВИЗУАЛЕ
     createToggle(sf, "Weapon Rainbow Color", FeatureState.RainbowWeapon, function(v)
         FeatureState.RainbowWeapon = v
     end)
@@ -1066,7 +1064,7 @@ local function buildSettingsTab()
     end)
 end
 
--- Register Tabs (С текстурой 17373505345 для Items)
+-- Register Tabs
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
@@ -1128,7 +1126,7 @@ local function setUIVisible(state)
     end
 end
 
--- Floating Toggle Button (Перетаскиваемая кнопка с тремя полосками)
+-- Floating Toggle Button
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
