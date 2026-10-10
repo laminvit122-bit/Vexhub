@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Fixed Floating Button Click & Drag)
+    VexHub - Prison Life Edition (Exact Dex++ Hierarchy Fixed)
     Created by DevScripts
 --]]
 
@@ -34,7 +34,7 @@ local C_CARD       = Color3.fromRGB(22, 22, 22)
 local C_CARD_HOVER = Color3.fromRGB(28, 28, 28)
 local C_ACCENT     = Color3.fromRGB(139, 92, 246)
 local C_TOGGLE_OFF = Color3.fromRGB(55, 55, 55)
-local C_TOGGLE_ON  = Color3.fromRGB(34, 197, 94)
+local C_TOGGLE_ON  = Color3.fromRGB(34, 197, 94) -- Зеленый при включении
 local C_KNOB       = Color3.fromRGB(255, 255, 255)
 local C_TEXT       = Color3.fromRGB(255, 255, 255)
 local C_MUTED      = Color3.fromRGB(138, 138, 138)
@@ -55,8 +55,54 @@ local FeatureState = {
     FastPunch = false,
     AntiAFK = true,
     KillAura = false,
-    AuraRange = 15
+    AuraRange = 15,
+    Language = "RU" -- RU, EN, AR
 }
+
+-- Localization Dictionary
+local Loc = {
+    RU = {
+        Home = "Главная", Main = "Главное", Visuals = "Визуал", Items = "Оружие", Settings = "Настройки",
+        Search = "Поиск...", Welcome = "С ВОЗВРАЩЕНИЕМ", Supported = "Ваш экзекутор полностью поддерживается.",
+        ToggleTip = "Нажмите значок или RShift", Aimbot = "Аимбот (Автонаведение)", WallCheck = "Проверка стен",
+        TeamCheck = "Проверка команды", FovRadius = "Радиус FOV", KillAura = "Убийство аурой",
+        AuraRange = "Дистанция ауры", SpeedBoost = "Ускорение бега", SpeedMultiplier = "Множитель скорости",
+        FastPunch = "Быстрый удар", Noclip = "Хождение сквозь стены (Noclip)", Esp = "Подсветка игроков (ESP)",
+        RainbowWeapon = "Радужное оружие (Переливы)", AntiAFK = "Анти-АФК", ResetChar = "Сбросить персонажа",
+        Notif = "Уведомления", NotifDur = "Длительность увед.", Unload = "Закрыть интерфейс",
+        LangTitle = "Язык интерфейса", Copied = "Job ID скопирован в буфер!", HopSearch = "Поиск сервера..."
+    },
+    EN = {
+        Home = "Home", Main = "Main", Visuals = "Visuals", Items = "Guns & Items", Settings = "Settings",
+        Search = "Search...", Welcome = "WELCOME BACK", Supported = "Your executor is supported and fully compatible.",
+        ToggleTip = "Tap the pill or RShift", Aimbot = "Aimbot", WallCheck = "Wall Check",
+        TeamCheck = "Team Check", FovRadius = "FOV Radius", KillAura = "Kill Aura",
+        AuraRange = "Aura Range", SpeedBoost = "Speed Boost", SpeedMultiplier = "Speed Multiplier",
+        FastPunch = "Fast Punch", Noclip = "Noclip", Esp = "ESP (Team Colors)",
+        RainbowWeapon = "Weapon Rainbow Color", AntiAFK = "Anti AFK", ResetChar = "Reset Character",
+        Notif = "Notifications", NotifDur = "Notif Duration", Unload = "Unload UI",
+        LangTitle = "Language", Copied = "Job ID copied to clipboard!", HopSearch = "Searching server..."
+    },
+    AR = {
+        Home = "الرئيسية", Main = "الرئيسية", Visuals = "المظهر", Items = "الأسلحة", Settings = "الإعدادات",
+        Search = "بحث...", Welcome = "أهلاً بك مجددا", Supported = "محاكيك مدعوم بالكامل ومتوافق.",
+        ToggleTip = "اضغط على الزر أو RShift", Aimbot = "الايمبوت", WallCheck = "فحص الجدران",
+        TeamCheck = "فحص الفريق", FovRadius = "حجم دائرة الرؤية", KillAura = "هالة القتل",
+        AuraRange = "مدى الهالة", SpeedBoost = "زيادة السرعة", SpeedMultiplier = "مضاعف السرعة",
+        FastPunch = "لكمة سريعة", Noclip = "المشي عبر الجدران", Esp = "كشف أماكن اللاعبين (ESP)",
+        RainbowWeapon = "تلوين السلاح بألوان الطيف", AntiAFK = "منع الخمول", ResetChar = "إعادة تعيين الشخصية",
+        Notif = "الإشعارات", NotifDur = "مدة الإشعار", Unload = "إغلاق الواجهة",
+        LangTitle = "لغة الواجهة", Copied = "تم نسخ معرف الجلسة!", HopSearch = "جاري البحث عن سرفر..."
+    }
+}
+
+local function _T(key)
+    local l = FeatureState.Language or "RU"
+    if Loc[l] and Loc[l][key] then
+        return Loc[l][key]
+    end
+    return Loc["RU"][key] or key
+end
 
 -- Container
 local targetParent = CoreGui
@@ -359,7 +405,7 @@ local FooterText = Instance.new("TextLabel")
 FooterText.Size = UDim2.new(0, 300, 1, 0)
 FooterText.Position = UDim2.new(0, 14, 0, 0)
 FooterText.BackgroundTransparency = 1
-FooterText.Text = "Your executor is supported and fully compatible."
+FooterText.Text = _T("Supported")
 FooterText.TextColor3 = C_MUTED
 FooterText.Font = Enum.Font.GothamMedium
 FooterText.TextSize = 11
@@ -370,7 +416,7 @@ local FooterRight = Instance.new("TextLabel")
 FooterRight.Size = UDim2.new(0, 200, 1, 0)
 FooterRight.Position = UDim2.new(1, -200, 0, 0)
 FooterRight.BackgroundTransparency = 1
-FooterRight.Text = "Tap the pill or RShift"
+FooterRight.Text = _T("ToggleTip")
 FooterRight.TextColor3 = C_FAINT
 FooterRight.Font = Enum.Font.GothamMedium
 FooterRight.TextSize = 11
@@ -407,28 +453,6 @@ local function makeScrollingFrame()
     end)
     return sf
 end
-
-SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
-    local filter = SearchInput.Text:lower()
-    local activeSF = Content:FindFirstChild("TabScroll")
-    if activeSF then
-        for _, elem in ipairs(activeSF:GetChildren()) do
-            if elem:IsA("GuiObject") and not elem:IsA("UIListLayout") then
-                local txt = ""
-                for _, sub in ipairs(elem:GetDescendants()) do
-                    if sub:IsA("TextLabel") and sub.Text ~= "" then
-                        txt = txt .. " " .. sub.Text:lower()
-                    end
-                end
-                if filter == "" or string.find(txt, filter) then
-                    elem.Visible = true
-                else
-                    elem.Visible = false
-                end
-            end
-        end
-    end
-end)
 
 -- Controls Builder
 local function createToggle(parent, title, defaultState, callback)
@@ -595,28 +619,11 @@ end
 -- Tab Management
 local currentTab = "Home"
 local tabs = {}
+local selectTab
 
-local function selectTab(name)
-    currentTab = name
-    for tabName, data in pairs(tabs) do
-        if tabName == name then
-            TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
-            data.lbl.TextColor3 = C_ACCENT
-            data.iconImg.ImageColor3 = C_ACCENT
-            TabIconHeader.Image = data.iconAsset
-            TabTitleHeader.Text = data.label
-            clearContent()
-            data.build()
-        else
-            TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play()
-            data.lbl.TextColor3 = C_MUTED
-            data.iconImg.ImageColor3 = C_MUTED
-        end
-    end
-end
-
-local function registerTab(name, iconAsset, label, buildFunc, order)
+local function registerTab(name, iconAsset, labelKey, buildFunc, order)
     local btn = Instance.new("TextButton")
+    btn.Name = name .. "TabBtn"
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = C_SIDEBAR
     btn.BackgroundTransparency = 0.1
@@ -635,10 +642,11 @@ local function registerTab(name, iconAsset, label, buildFunc, order)
     iconImg.Parent = btn
 
     local lbl = Instance.new("TextLabel")
+    lbl.Name = "LabelText"
     lbl.Size = UDim2.new(1, -40, 1, 0)
     lbl.Position = UDim2.new(0, 38, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = label
+    lbl.Text = _T(labelKey)
     lbl.TextColor3 = C_MUTED
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 13
@@ -655,14 +663,46 @@ local function registerTab(name, iconAsset, label, buildFunc, order)
     btn.MouseButton1Click:Connect(function() selectTab(name) end)
 
     tabs[name] = {
-        btn = btn, iconAsset = iconAsset, label = label, lbl = lbl, iconImg = iconImg, build = buildFunc
+        btn = btn, iconAsset = iconAsset, labelKey = labelKey, lbl = lbl, iconImg = iconImg, build = buildFunc
     }
+end
+
+selectTab = function(name)
+    currentTab = name
+    for tabName, data in pairs(tabs) do
+        if tabName == name then
+            TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_CARD_HOVER}):Play()
+            data.lbl.TextColor3 = C_ACCENT
+            data.iconImg.ImageColor3 = C_ACCENT
+            TabIconHeader.Image = data.iconAsset
+            TabTitleHeader.Text = _T(data.labelKey)
+            clearContent()
+            data.build()
+        else
+            TweenService:Create(data.btn, TweenInfo.new(0.16), {BackgroundColor3 = C_SIDEBAR}):Play()
+            data.lbl.TextColor3 = C_MUTED
+            data.iconImg.ImageColor3 = C_MUTED
+        end
+    end
+end
+
+local function updateInterfaceLanguage()
+    FooterText.Text = _T("Supported")
+    FooterRight.Text = _T("ToggleTip")
+    for tabName, data in pairs(tabs) do
+        if data.lbl and data.lbl.Parent then
+            data.lbl.Text = _T(data.labelKey)
+        end
+    end
+    if currentTab then
+        selectTab(currentTab)
+    end
 end
 
 local startTime = tick()
 
 local function serverHop(lowest)
-    notify("Server Hop", "Поиск сервера...")
+    notify("Server Hop", _T("HopSearch"))
     task.spawn(function()
         local req = (syn and syn.request) or (http and http.request) or http_request or request
         if not req then
@@ -699,21 +739,29 @@ local function serverHop(lowest)
     end)
 end
 
+-- НАДЕЖНОЕ ПОЛУЧЕНИЕ ОРУЖИЯ ПО ИХ ТОЧНЫМ НАЗВАНИЯМ ИЗ DEX++
 local function getRealItem(itemName)
     task.spawn(function()
         local remoteEvent = Workspace:FindFirstChild("Remote") and Workspace.Remote:FindFirstChild("ItemHandler")
         if remoteEvent then
+            local itemFound = nil
             for _, obj in ipairs(Workspace:GetDescendants()) do
-                if obj.Name == itemName then
-                    local pickup = obj:FindFirstChild("ITEMPICKUP") or obj
-                    pcall(function()
-                        remoteEvent:InvokeServer(pickup)
-                    end)
+                if obj.Name == itemName or (obj:IsA("Model") and string.lower(obj.Name) == string.lower(itemName)) then
+                    itemFound = obj:FindFirstChild("ITEMPICKUP") or obj
+                    break
                 end
             end
-            notify("Item Spawner", "Получено: " .. itemName)
+            
+            if itemFound then
+                pcall(function()
+                    remoteEvent:InvokeServer(itemFound)
+                end)
+                notify("Item Spawner", "Получено: " .. itemName)
+            else
+                notify("Item Spawner", "Предмет не найден: " .. itemName)
+            end
         else
-            notify("Item Spawner", "Не найден обработчик предметов")
+            notify("Item Spawner", "Не найден ItemHandler")
         end
     end)
 end
@@ -733,7 +781,7 @@ local function buildHomeTab()
     wbFaint.Size = UDim2.new(0, 200, 0, 14)
     wbFaint.Position = UDim2.new(0, 16, 0, 14)
     wbFaint.BackgroundTransparency = 1
-    wbFaint.Text = "WELCOME BACK"
+    wbFaint.Text = _T("Welcome")
     wbFaint.TextColor3 = C_FAINT
     wbFaint.Font = Enum.Font.GothamBold
     wbFaint.TextSize = 10
@@ -957,9 +1005,7 @@ local function buildHomeTab()
         local clipFunc = setclipboard or toclipboard or (syn and syn.write_clipboard)
         if clipFunc then
             clipFunc(tostring(game.JobId))
-            notify("Clipboard", "Job ID скопирован в буфер!")
-        else
-            notify("Clipboard", "Не удалось скопировать Job ID")
+            notify("Clipboard", _T("Copied"))
         end
     end)
 end
@@ -967,51 +1013,51 @@ end
 local function buildMainTab()
     local sf = makeScrollingFrame()
 
-    createToggle(sf, "Aimbot", FeatureState.AimEnabled, function(v)
+    createToggle(sf, _T("Aimbot"), FeatureState.AimEnabled, function(v)
         FeatureState.AimEnabled = v
         FovCircle.Visible = v
     end)
 
-    createToggle(sf, "Wall Check (No Shoot Thru Walls)", FeatureState.WallCheck, function(v)
+    createToggle(sf, _T("WallCheck"), FeatureState.WallCheck, function(v)
         FeatureState.WallCheck = v
     end)
 
-    createToggle(sf, "Team Check (No Team Kill)", FeatureState.TeamCheck, function(v)
+    createToggle(sf, _T("TeamCheck"), FeatureState.TeamCheck, function(v)
         FeatureState.TeamCheck = v
     end)
 
-    createSlider(sf, "FOV Radius", 30, 300, FeatureState.FovRadius, function(v)
+    createSlider(sf, _T("FovRadius"), 30, 300, FeatureState.FovRadius, function(v)
         FeatureState.FovRadius = v
         FovCircle.Radius = v
     end)
 
-    createToggle(sf, "Kill Aura (Hit Enemies)", FeatureState.KillAura, function(v)
+    createToggle(sf, _T("KillAura"), FeatureState.KillAura, function(v)
         FeatureState.KillAura = v
     end)
 
-    createSlider(sf, "Aura Range", 5, 30, FeatureState.AuraRange, function(v)
+    createSlider(sf, _T("AuraRange"), 5, 30, FeatureState.AuraRange, function(v)
         FeatureState.AuraRange = v
     end)
 
-    createToggle(sf, "Speed Boost", FeatureState.SpeedBoost, function(v)
+    createToggle(sf, _T("SpeedBoost"), FeatureState.SpeedBoost, function(v)
         FeatureState.SpeedBoost = v
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = v and FeatureState.WalkSpeedVal or 16
         end
     end)
 
-    createSlider(sf, "Speed Multiplier", 16, 35, FeatureState.WalkSpeedVal, function(v)
+    createSlider(sf, _T("SpeedMultiplier"), 16, 35, FeatureState.WalkSpeedVal, function(v)
         FeatureState.WalkSpeedVal = math.clamp(v, 16, 35)
         if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
         end
     end)
 
-    createToggle(sf, "Fast Punch", FeatureState.FastPunch, function(v)
+    createToggle(sf, _T("FastPunch"), FeatureState.FastPunch, function(v)
         FeatureState.FastPunch = v
     end)
 
-    createToggle(sf, "Noclip", FeatureState.Noclip, function(v)
+    createToggle(sf, _T("Noclip"), FeatureState.Noclip, function(v)
         FeatureState.Noclip = v
     end)
 end
@@ -1019,19 +1065,19 @@ end
 local function buildPlayerTab()
     local sf = makeScrollingFrame()
 
-    createToggle(sf, "ESP (Team Colors)", FeatureState.EspEnabled, function(v)
+    createToggle(sf, _T("Esp"), FeatureState.EspEnabled, function(v)
         FeatureState.EspEnabled = v
     end)
 
-    createToggle(sf, "Weapon Rainbow Color", FeatureState.RainbowWeapon, function(v)
+    createToggle(sf, _T("RainbowWeapon"), FeatureState.RainbowWeapon, function(v)
         FeatureState.RainbowWeapon = v
     end)
 
-    createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
+    createToggle(sf, _T("AntiAFK"), FeatureState.AntiAFK, function(v)
         FeatureState.AntiAFK = v
     end)
 
-    createButton(sf, "Reset Character", function()
+    createButton(sf, _T("ResetChar"), function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.Health = 0
         end
@@ -1041,23 +1087,68 @@ end
 local function buildItemsTab()
     local sf = makeScrollingFrame()
 
-    createButton(sf, "Get M4A1 Rifle", function() getRealItem("M4A1") end)
+    createButton(sf, "Get M4A1", function() getRealItem("M4A1") end)
     createButton(sf, "Get Remington 870", function() getRealItem("Remington 870") end)
     createButton(sf, "Get AK-47", function() getRealItem("AK-47") end)
-    createButton(sf, "Get M9 Pistol", function() getRealItem("M9") end)
-    createButton(sf, "Get Taser", function() getRealItem("Taser") end)
+    createButton(sf, "Get Revolver", function() getRealItem("Revolver") end)
+    createButton(sf, "Get M700", function() getRealItem("M700") end)
+    createButton(sf, "Get FAL", function() getRealItem("FAL") end)
     createButton(sf, "Get Riot Shield", function() getRealItem("Riot Shield") end)
-    createButton(sf, "Get Keycard", function() getRealItem("Keycard") end)
 end
 
 local function buildSettingsTab()
     local sf = makeScrollingFrame()
 
-    createToggle(sf, "Notifications", notifEnabled, function(v) notifEnabled = v end)
+    createToggle(sf, _T("Notif"), notifEnabled, function(v) notifEnabled = v end)
 
-    createSlider(sf, "Notif Duration", 1, 10, notifDuration, function(v) notifDuration = v end)
+    createSlider(sf, _T("NotifDur"), 1, 10, notifDuration, function(v) notifDuration = v end)
 
-    createButton(sf, "Unload UI", function()
+    -- Переключатель языков
+    local langCard = Instance.new("Frame")
+    langCard.Size = UDim2.new(1, 0, 0, 56)
+    langCard.BackgroundColor3 = C_CARD
+    langCard.BackgroundTransparency = 0.1
+    langCard.Parent = sf
+    createCorner(langCard, 10)
+
+    local langLbl = Instance.new("TextLabel")
+    langLbl.Size = UDim2.new(0.5, 0, 1, 0)
+    langLbl.Position = UDim2.new(0, 14, 0, 0)
+    langLbl.BackgroundTransparency = 1
+    langLbl.Text = _T("LangTitle")
+    langLbl.TextColor3 = C_TEXT
+    langLbl.Font = Enum.Font.GothamMedium
+    langLbl.TextSize = 13
+    langLbl.TextXAlignment = Enum.TextXAlignment.Left
+    langLbl.Parent = langCard
+
+    local langBtn = Instance.new("TextButton")
+    langBtn.Size = UDim2.new(0, 120, 0, 32)
+    langBtn.Position = UDim2.new(1, -134, 0.5, -16)
+    langBtn.BackgroundColor3 = C_SIDEBAR
+    langBtn.AutoButtonColor = false
+    langBtn.Text = FeatureState.Language == "RU" and "Русский" or (FeatureState.Language == "EN" and "English" or "العربية")
+    langBtn.TextColor3 = C_ACCENT
+    langBtn.Font = Enum.Font.GothamBold
+    langBtn.TextSize = 12
+    langBtn.Parent = langCard
+    createCorner(langBtn, 8)
+
+    langBtn.MouseButton1Click:Connect(function()
+        if FeatureState.Language == "RU" then
+            FeatureState.Language = "EN"
+            langBtn.Text = "English"
+        elseif FeatureState.Language == "EN" then
+            FeatureState.Language = "AR"
+            langBtn.Text = "العربية"
+        else
+            FeatureState.Language = "RU"
+            langBtn.Text = "Русский"
+        end
+        updateInterfaceLanguage()
+    end)
+
+    createButton(sf, _T("Unload"), function()
         getgenv().VexHub_Loaded = false
         FovCircle:Remove()
         ScreenGui:Destroy()
@@ -1068,7 +1159,7 @@ end
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
-registerTab("Items", "rbxassetid://17373505345", "Guns & Items", buildItemsTab, 4)
+registerTab("Items", "rbxassetid://17373505345", "Items", buildItemsTab, 4)
 registerTab("Settings", "rbxassetid://11956055886", "Settings", buildSettingsTab, 5)
 
 selectTab("Home")
@@ -1126,7 +1217,7 @@ local function setUIVisible(state)
     end
 end
 
--- Floating Toggle Button (Fixed Drag & Click separation)
+-- Floating Toggle Button
 local FloatingBtn = Instance.new("TextButton")
 FloatingBtn.Name = "FloatingToggle"
 FloatingBtn.Size = UDim2.new(0, 40, 0, 40)
@@ -1197,14 +1288,19 @@ local function isTargetVisible(targetPart)
     return true
 end
 
--- Fast Punch Event Listener
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if not gpe and input.UserInputType == Enum.UserInputType.MouseButton1 and FeatureState.FastPunch then
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChildOfClass("Tool") and char:FindFirstChildOfClass("Tool").Name == "Melee" then
+-- Fast Punch (Рабочий поток)
+task.spawn(function()
+    while true do
+        task.wait(0.08)
+        if FeatureState.FastPunch then
             pcall(function()
-                ReplicatedStorage.Attribute:FireServer(string.rep(" ", 20))
-                Workspace.Remote.meleeEvent:FireServer(LocalPlayer)
+                local char = LocalPlayer.Character
+                if char then
+                    local tool = char:FindFirstChildOfClass("Tool")
+                    if tool and (tool.Name == "Melee" or tool.Name == "Fists") then
+                        Workspace.Remote.meleeEvent:FireServer(LocalPlayer)
+                    end
+                end
             end)
         end
     end
@@ -1228,17 +1324,20 @@ RunService.RenderStepped:Connect(function()
         LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
     end
 
-    -- Радужная покраска оружия в руках
+    -- РАДУЖНОЕ ОРУЖИЕ (Подстроено под иерархию Dex++)
     if FeatureState.RainbowWeapon then
         local char = LocalPlayer.Character
         if char then
-            local hue = tick() % 5 / 5
+            local hue = tick() % 4 / 4
             local rainbowColor = Color3.fromHSV(hue, 1, 1)
             for _, item in ipairs(char:GetChildren()) do
                 if item:IsA("Tool") then
                     for _, part in ipairs(item:GetDescendants()) do
-                        if part:IsA("BasePart") then
+                        if part:IsA("BasePart") or part:IsA("MeshPart") or part:IsA("UnionOperation") then
                             part.Color = rainbowColor
+                            part.Material = Enum.Material.Neon
+                        elseif part:IsA("SpecialMesh") then
+                            part.VertexColor = Vector3.new(rainbowColor.R, rainbowColor.G, rainbowColor.B)
                         end
                     end
                 end
