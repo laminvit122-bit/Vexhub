@@ -1,5 +1,5 @@
 --[[
-    VexHub - Prison Life Edition (Draggable Menu Button & Fixed)
+    VexHub - Prison Life Edition (Rainbow Weapon & Draggable Menu)
     Created by DevScripts
 --]]
 
@@ -48,6 +48,7 @@ local FeatureState = {
     TeamCheck = true,
     WallCheck = true,
     EspEnabled = false,
+    RainbowWeapon = false, -- Новая функция переливов цвета оружия
     SpeedBoost = false,
     WalkSpeedVal = 24,
     Noclip = false,
@@ -75,7 +76,7 @@ local function createCorner(parent, radius)
     return corner
 end
 
--- FOV Circle (Обычный)
+-- FOV Circle
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = C_ACCENT
 FovCircle.Thickness = 1.5
@@ -1023,6 +1024,11 @@ local function buildPlayerTab()
         FeatureState.EspEnabled = v
     end)
 
+    -- НОВАЯ ФУНКЦИЯ: РАДУЖНОЕ ОРУЖИЕ В ВИЗУАЛЕ
+    createToggle(sf, "Weapon Rainbow Color", FeatureState.RainbowWeapon, function(v)
+        FeatureState.RainbowWeapon = v
+    end)
+
     createToggle(sf, "Anti AFK", FeatureState.AntiAFK, function(v)
         FeatureState.AntiAFK = v
     end)
@@ -1060,7 +1066,7 @@ local function buildSettingsTab()
     end)
 end
 
--- Register Tabs
+-- Register Tabs (С текстурой 17373505345 для Items)
 registerTab("Home", "rbxassetid://7539983773", "Home", buildHomeTab, 1)
 registerTab("Main", "rbxassetid://10974441727", "Main", buildMainTab, 2)
 registerTab("Player", "rbxassetid://17412298151", "Visuals", buildPlayerTab, 3)
@@ -1220,6 +1226,24 @@ RunService.RenderStepped:Connect(function()
 
     if FeatureState.SpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = FeatureState.WalkSpeedVal
+    end
+
+    -- Радужная покраска оружия в руках
+    if FeatureState.RainbowWeapon then
+        local char = LocalPlayer.Character
+        if char then
+            local hue = tick() % 5 / 5
+            local rainbowColor = Color3.fromHSV(hue, 1, 1)
+            for _, item in ipairs(char:GetChildren()) do
+                if item:IsA("Tool") then
+                    for _, part in ipairs(item:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.Color = rainbowColor
+                        end
+                    end
+                end
+            end
+        end
     end
 
     -- Aimbot Logic
